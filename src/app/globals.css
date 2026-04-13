@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fafafa;
+  --foreground: #1a1a2e;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Surfaces */
+  --color-surface-base: #fafafa;
+  --color-surface-raised: #ffffff;
+  --color-surface-overlay: #f3f4f6;
+  --color-surface-border: #e5e7eb;
+
+  /* Sidebar */
+  --sidebar-w: 14rem;
+}
+
+html,
+body {
+  background-color: var(--color-surface-base);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Sidebar: clip horizontal overflow (spino enters/exits) but not vertical (sail visible) */
+[data-spino-host] {
+  overflow-x: clip;
+}
+
+/* ── Spinosaurus Easter Egg ── */
+
+/* Dino crosses left → right */
+@keyframes spino-cross {
+  0%   { transform: translateX(-90px); }
+  100% { transform: translateX(240px); }
+}
+.spino-cross {
+  animation: spino-cross 5s linear forwards;
+}
+
+/* Scrolling scenery */
+@keyframes spino-scenery-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.spino-scenery {
+  animation: spino-scenery-scroll 5s linear forwards;
+}
+
+/* ── Walk mode ── */
+@keyframes spino-walk-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-2px); }
+}
+.spino-walk-bounce {
+  animation: spino-walk-bounce 0.3s ease-in-out infinite;
+}
+
+/* Leg stride — whole leg group rotates at hip */
+@keyframes spino-stride {
+  0%, 100% { transform: rotate(-16deg); }
+  50%      { transform: rotate(16deg); }
+}
+.spino-leg-right { transform-origin: 40px 39px; animation: spino-stride 0.3s ease-in-out infinite; }
+.spino-leg-left  { transform-origin: 27px 39px; animation: spino-stride 0.3s ease-in-out infinite 0.15s; }
+
+/* ── Swim mode ── */
+@keyframes spino-swim-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-3px) rotate(1.5deg); }
+}
+.spino-swim-bob {
+  animation: spino-swim-bob 0.8s ease-in-out infinite;
+}
+
+@keyframes spino-paddle {
+  0%, 100% { transform: rotate(-20deg); }
+  50%      { transform: rotate(20deg); }
+}
+.spino-paddle-r { transform-origin: 42px 35px; animation: spino-paddle 0.5s ease-in-out infinite; }
+.spino-paddle-l { transform-origin: 25px 35px; animation: spino-paddle 0.5s ease-in-out infinite 0.25s; }
