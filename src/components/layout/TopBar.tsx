@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { UserButton } from '@clerk/nextjs';
 import { useLogHistory } from '@/lib/useLogHistory';
 
@@ -18,6 +19,45 @@ function TrashIcon() {
         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3"
       />
     </svg>
+  );
+}
+
+interface WeatherData {
+  temp: number;
+  label: string;
+  icon: string;
+  unit: string;
+}
+
+function WeatherBadge() {
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/weather')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!cancelled && data && !data.error) setWeather(data);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!weather) return null;
+
+  return (
+    <div
+      className="flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs"
+      style={{ borderColor: 'var(--color-surface-border)' }}
+      title={`${weather.label} in Chicago`}
+    >
+      <span>{weather.icon}</span>
+      <span className="font-medium text-gray-700">
+        {weather.temp}{weather.unit}
+      </span>
+    </div>
   );
 }
 
@@ -45,6 +85,7 @@ export default function TopBar() {
         borderColor: 'var(--color-surface-border)',
       }}
     >
+      <WeatherBadge />
       <UserButton>
         <UserButton.MenuItems>
           <UserButton.Action label="manageAccount" />
