@@ -1,19 +1,12 @@
-export type TaskCategoryId =
-  | 'class-se'
-  | 'class-bds'
-  | 'class-pe'
-  | 'work-gradlounge'
-  | 'work-demography'
-  | 'personal-study'
-  | 'job-application'
-  | 'habit'
-  | 'other';
+export type TaskCategoryId = string;
 
 export interface TaskCategory {
   id: TaskCategoryId;
-  group: 'Classes' | 'Work' | 'Personal Study' | 'Job Application' | 'Habits' | 'Other';
+  group: string;
   label: string;
   color: string;
+  parentId?: string | null;
+  userId?: string | null;
 }
 
 export type DeadlineType = 'none' | 'soft' | 'hard';

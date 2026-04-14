@@ -2,7 +2,7 @@
 
 import { useDraggable } from '@dnd-kit/core';
 import type { TaskItem } from '@/types/planner';
-import { CATEGORIES } from '@/lib/constants';
+import { useCategories } from '@/lib/useCategories';
 
 interface DraggableTaskProps {
   task: TaskItem;
@@ -14,8 +14,9 @@ export default function DraggableTask({ task, compact, onToggleDone }: Draggable
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: task.id,
   });
+  const { find } = useCategories();
 
-  const cat = CATEGORIES.find((c) => c.id === task.categoryId);
+  const cat = find(task.categoryId);
 
   const style = transform
     ? {

@@ -3,7 +3,7 @@
 import { DndContext, type DragEndEvent } from '@dnd-kit/core';
 import { useDroppable } from '@dnd-kit/core';
 import { usePlanner } from '@/components/planner/PlannerContext';
-import { CATEGORIES, CATEGORY_GROUPS } from '@/lib/constants';
+import { useCategories } from '@/lib/useCategories';
 import type { EisenhowerQuadrant } from '@/types/planner';
 import DraggableTask from './DraggableTask';
 
@@ -48,6 +48,7 @@ function DroppableQuadrant({
 
 export default function PlannerView() {
   const { tasks, toggleTask, setTaskQuadrant } = usePlanner();
+  const { groups, byGroup } = useCategories();
 
   const unassigned = tasks.filter((t) => !t.quadrant);
 
@@ -110,8 +111,8 @@ export default function PlannerView() {
             <p className="text-xs text-gray-400 py-2">All tasks are assigned to a quadrant!</p>
           ) : (
             <div className="space-y-2">
-              {CATEGORY_GROUPS.map((group) => {
-                const groupCats = CATEGORIES.filter((c) => c.group === group);
+              {groups.map((group) => {
+                const groupCats = byGroup(group);
                 const groupTasks = unassigned.filter((t) =>
                   groupCats.some((c) => c.id === t.categoryId)
                 );

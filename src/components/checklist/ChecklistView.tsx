@@ -3,7 +3,7 @@
 import { useCallback } from 'react';
 import { usePlanner } from '@/components/planner/PlannerContext';
 import { useHabits } from '@/lib/useHabits';
-import { CATEGORIES, CATEGORY_GROUPS } from '@/lib/constants';
+import { useCategories } from '@/lib/useCategories';
 import ProgressBar from './ProgressBar';
 import TaskCard from './TaskCard';
 
@@ -15,6 +15,7 @@ function todayKey(): string {
 export default function ChecklistView() {
   const { tasks, toggleTask } = usePlanner();
   const { habits, toggleCompletion, isCompleted } = useHabits();
+  const { groups, byGroup, find: findCategory } = useCategories();
 
   const done = tasks.filter((t) => t.done).length;
   const total = tasks.length;
@@ -28,8 +29,8 @@ export default function ChecklistView() {
 
       <ProgressBar done={done} total={total} />
 
-      {CATEGORY_GROUPS.map((group) => {
-        const groupCats = CATEGORIES.filter((c) => c.group === group);
+      {groups.map((group) => {
+        const groupCats = byGroup(group);
         const groupTasks = tasks.filter((t) =>
           groupCats.some((c) => c.id === t.categoryId)
         );
@@ -42,7 +43,7 @@ export default function ChecklistView() {
             </h3>
             <div className="space-y-2">
               {groupTasks.map((task) => {
-                const cat = CATEGORIES.find((c) => c.id === task.categoryId)!;
+                const cat = findCategory(task.categoryId) ?? { id: task.categoryId, group: 'Other', label: task.categoryId, color: '#6b7280' };
                 return (
                   <TaskCard
                     key={task.id}

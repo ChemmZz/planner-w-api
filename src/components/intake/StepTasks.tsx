@@ -2,12 +2,20 @@
 
 import { useState } from 'react';
 import { usePlanner } from '@/components/planner/PlannerContext';
-import { CATEGORIES, CATEGORY_GROUPS } from '@/lib/constants';
+import { useCategories } from '@/lib/useCategories';
 import type { DeadlineType, EventType } from '@/types/planner';
+
+const PRESET_COLORS = ['#059669', '#8b5cf6', '#f59e0b', '#3b82f6', '#ec4899', '#f97316', '#10b981', '#6b7280'];
 
 export default function StepTasks() {
   const { tasks, addTask, removeTask, updateTaskText, setTaskDeadline, setTaskEventType, setTaskNote } = usePlanner();
+  const { groups, byGroup, addGroup, addCategory, deleteCategory } = useCategories();
   const [expandedNote, setExpandedNote] = useState<string | null>(null);
+  const [showCategoryManager, setShowCategoryManager] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [newCatGroup, setNewCatGroup] = useState('');
+  const [newCatLabel, setNewCatLabel] = useState('');
+  const [newCatColor, setNewCatColor] = useState('#059669');
 
   return (
     <div className="space-y-6">
@@ -18,8 +26,8 @@ export default function StepTasks() {
         </p>
       </div>
 
-      {CATEGORY_GROUPS.map((group) => {
-        const groupCats = CATEGORIES.filter((c) => c.group === group);
+      {groups.map((group) => {
+        const groupCats = byGroup(group);
         return (
           <div key={group} className="space-y-3">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
@@ -148,6 +156,125 @@ export default function StepTasks() {
           </div>
         );
       })}
+
+      {/* Category manager */}
+      <div className="border-t border-gray-200 pt-4">
+        <button
+          onClick={() => setShowCategoryManager((v) => !v)}
+          className="text-xs font-medium text-gray-400 hover:text-emerald-600 transition-colors"
+        >
+          {showCategoryManager ? 'Hide category manager' : '+ Manage categories'}
+        </button>
+
+        {showCategoryManager && (
+          <div className="mt-3 space-y-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
+            {/* Add new group */}
+            <div>
+              <label className="mb-1 block text-[10px] font-semibold uppercase text-gray-400">
+                New group
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                  placeholder="e.g. Research, Freelance…"
+                  className="flex-1 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm outline-none focus:border-emerald-300"
+                />
+                <button
+                  onClick={async () => {
+                    if (!newGroupName.trim()) return;
+                    await addGroup(newGroupName.trim());
+                    setNewGroupName('');
+                  }}
+                  disabled={!newGroupName.trim()}
+                  className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:bg-gray-200 disabled:text-gray-400"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+
+            {/* Add category to existing group */}
+            <div>
+              <label className="mb-1 block text-[10px] font-semibold uppercase text-gray-400">
+                New category
+              </label>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <select
+                  value={newCatGroup}
+                  onChange={(e) => setNewCatGroup(e.target.value)}
+                  className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm outline-none focus:border-emerald-300"
+                >
+                  <option value="">Group…</option>
+                  {groups.map((g) => (
+                    <option key={g} value={g}>{g}</option>
+                  ))}
+                </select>
+                <input
+                  type="text"
+                  value={newCatLabel}
+                  onChange={(e) => setNewCatLabel(e.target.value)}
+                  placeholder="Category name"
+                  className="flex-1 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm outline-none focus:border-emerald-300"
+                />
+                <div className="flex gap-1">
+                  {PRESET_COLORS.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setNewCatColor(c)}
+                      className={`h-6 w-6 rounded-full ${newCatColor === c ? 'ring-2 ring-offset-1' : ''}`}
+                      style={{ backgroundColor: c, outlineColor: c }}
+                    />
+                  ))}
+                </div>
+                <button
+                  onClick={async () => {
+                    if (!newCatGroup || !newCatLabel.trim()) return;
+                    await addCategory(newCatGroup, newCatLabel.trim(), newCatColor);
+                    setNewCatLabel('');
+                  }}
+                  disabled={!newCatGroup || !newCatLabel.trim()}
+                  className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:bg-gray-200 disabled:text-gray-400"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+
+            {/* List user-created categories with delete */}
+            {groups.map((group) => {
+              const cats = byGroup(group).filter((c) => c.userId);
+              if (cats.length === 0) return null;
+              return (
+                <div key={group}>
+                  <p className="text-[10px] font-semibold uppercase text-gray-400 mb-1">{group}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {cats.map((cat) => (
+                      <span
+                        key={cat.id}
+                        className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium text-white"
+                        style={{ backgroundColor: cat.color }}
+                      >
+                        {cat.label}
+                        <button
+                          onClick={() => {
+                            if (window.confirm(`Delete "${cat.label}"?`)) deleteCategory(cat.id);
+                          }}
+                          className="ml-0.5 hover:opacity-70"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

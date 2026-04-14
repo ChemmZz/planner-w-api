@@ -1,7 +1,7 @@
 'use client';
 
 import { usePlanner } from '@/components/planner/PlannerContext';
-import { CATEGORIES } from '@/lib/constants';
+import { useCategories } from '@/lib/useCategories';
 
 interface TaskPickerProps {
   selectedTaskId: string | null;
@@ -10,13 +10,14 @@ interface TaskPickerProps {
 
 export default function TaskPicker({ selectedTaskId, onSelect }: TaskPickerProps) {
   const { tasks } = usePlanner();
+  const { find } = useCategories();
   const activeTasks = tasks.filter((t) => !t.done);
 
   if (activeTasks.length === 0) return null;
 
   const selected = tasks.find((t) => t.id === selectedTaskId);
   const selectedCat = selected
-    ? CATEGORIES.find((c) => c.id === selected.categoryId)
+    ? find( selected.categoryId)
     : null;
 
   return (
@@ -31,7 +32,7 @@ export default function TaskPicker({ selectedTaskId, onSelect }: TaskPickerProps
       >
         <option value="">Select a task…</option>
         {activeTasks.map((task) => {
-          const cat = CATEGORIES.find((c) => c.id === task.categoryId);
+          const cat = find( task.categoryId);
           return (
             <option key={task.id} value={task.id}>
               [{cat?.label}] {task.text || '(untitled)'}
