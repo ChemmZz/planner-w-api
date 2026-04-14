@@ -29,13 +29,6 @@ export interface TaskItem {
 
 export type WizardStep = 1 | 2;
 
-export interface HabitDef {
-  id: string;
-  label: string;
-  /** Tasks to create when this habit is selected */
-  tasks: { text: string }[];
-}
-
 export interface LogEntry {
   id: string;
   time: string;

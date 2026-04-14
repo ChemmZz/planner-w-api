@@ -9,11 +9,15 @@ const PRESET_COLORS = ['#059669', '#8b5cf6', '#f59e0b', '#3b82f6', '#ec4899', '#
 
 export default function StepTasks() {
   const { tasks, addTask, removeTask, updateTaskText, setTaskDeadline, setTaskEventType, setTaskNote } = usePlanner();
-  const { groups, byGroup, addGroup, addCategory, deleteCategory } = useCategories();
+  const { categories, groups, byGroup, addCategory, deleteCategory } = useCategories();
+
+  // Only show user-created categories in the task form (no system defaults)
+  const userGroups = [...new Set(categories.filter((c) => c.userId).map((c) => c.group))];
+  const userByGroup = (group: string) => categories.filter((c) => c.group === group && c.userId);
   const [expandedNote, setExpandedNote] = useState<string | null>(null);
   const [showCategoryManager, setShowCategoryManager] = useState(false);
-  const [newGroupName, setNewGroupName] = useState('');
   const [newCatGroup, setNewCatGroup] = useState('');
+  const [newCatGroupCustom, setNewCatGroupCustom] = useState('');
   const [newCatLabel, setNewCatLabel] = useState('');
   const [newCatColor, setNewCatColor] = useState('#059669');
 
@@ -26,8 +30,20 @@ export default function StepTasks() {
         </p>
       </div>
 
-      {groups.map((group) => {
-        const groupCats = byGroup(group);
+      {userGroups.length === 0 && (
+        <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 py-8 text-center">
+          <p className="text-sm text-gray-500">No categories yet.</p>
+          <button
+            onClick={() => setShowCategoryManager(true)}
+            className="mt-2 text-sm font-medium text-emerald-600 hover:text-emerald-700"
+          >
+            Create your first category
+          </button>
+        </div>
+      )}
+
+      {userGroups.map((group) => {
+        const groupCats = userByGroup(group);
         return (
           <div key={group} className="space-y-3">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
@@ -168,84 +184,83 @@ export default function StepTasks() {
 
         {showCategoryManager && (
           <div className="mt-3 space-y-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
-            {/* Add new group */}
+            {/* Add category (group can be existing or new) */}
             <div>
               <label className="mb-1 block text-[10px] font-semibold uppercase text-gray-400">
-                New group
+                Add category
               </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newGroupName}
-                  onChange={(e) => setNewGroupName(e.target.value)}
-                  placeholder="e.g. Research, Freelance…"
-                  className="flex-1 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm outline-none focus:border-emerald-300"
-                />
-                <button
-                  onClick={async () => {
-                    if (!newGroupName.trim()) return;
-                    await addGroup(newGroupName.trim());
-                    setNewGroupName('');
-                  }}
-                  disabled={!newGroupName.trim()}
-                  className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:bg-gray-200 disabled:text-gray-400"
-                >
-                  Add
-                </button>
-              </div>
-            </div>
-
-            {/* Add category to existing group */}
-            <div>
-              <label className="mb-1 block text-[10px] font-semibold uppercase text-gray-400">
-                New category
-              </label>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <select
-                  value={newCatGroup}
-                  onChange={(e) => setNewCatGroup(e.target.value)}
-                  className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm outline-none focus:border-emerald-300"
-                >
-                  <option value="">Group…</option>
-                  {groups.map((g) => (
-                    <option key={g} value={g}>{g}</option>
-                  ))}
-                </select>
-                <input
-                  type="text"
-                  value={newCatLabel}
-                  onChange={(e) => setNewCatLabel(e.target.value)}
-                  placeholder="Category name"
-                  className="flex-1 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm outline-none focus:border-emerald-300"
-                />
-                <div className="flex gap-1">
-                  {PRESET_COLORS.map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => setNewCatColor(c)}
-                      className={`h-6 w-6 rounded-full ${newCatColor === c ? 'ring-2 ring-offset-1' : ''}`}
-                      style={{ backgroundColor: c, outlineColor: c }}
+              <div className="flex flex-col gap-2">
+                <div className="flex gap-2">
+                  <select
+                    value={newCatGroup}
+                    onChange={(e) => {
+                      setNewCatGroup(e.target.value);
+                      if (e.target.value !== '__new__') setNewCatGroupCustom('');
+                    }}
+                    className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm outline-none focus:border-emerald-300"
+                  >
+                    <option value="">Group…</option>
+                    {userGroups.map((g) => (
+                      <option key={g} value={g}>{g}</option>
+                    ))}
+                    <option value="__new__">+ New group…</option>
+                  </select>
+                  {newCatGroup === '__new__' && (
+                    <input
+                      type="text"
+                      value={newCatGroupCustom}
+                      onChange={(e) => setNewCatGroupCustom(e.target.value)}
+                      placeholder="Group name"
+                      autoFocus
+                      className="flex-1 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm outline-none focus:border-emerald-300"
                     />
-                  ))}
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newCatLabel}
+                    onChange={(e) => setNewCatLabel(e.target.value)}
+                    placeholder="Category name"
+                    className="flex-1 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm outline-none focus:border-emerald-300"
+                  />
+                  <div className="flex gap-1 items-center">
+                    {PRESET_COLORS.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setNewCatColor(c)}
+                        className={`h-5 w-5 rounded-full ${newCatColor === c ? 'ring-2 ring-offset-1' : ''}`}
+                        style={{ backgroundColor: c, outlineColor: c }}
+                      />
+                    ))}
+                  </div>
                 </div>
                 <button
                   onClick={async () => {
-                    if (!newCatGroup || !newCatLabel.trim()) return;
-                    await addCategory(newCatGroup, newCatLabel.trim(), newCatColor);
+                    const group = newCatGroup === '__new__' ? newCatGroupCustom.trim() : newCatGroup;
+                    if (!group || !newCatLabel.trim()) return;
+                    await addCategory(group, newCatLabel.trim(), newCatColor);
                     setNewCatLabel('');
+                    if (newCatGroup === '__new__') {
+                      setNewCatGroup(group);
+                      setNewCatGroupCustom('');
+                    }
                   }}
-                  disabled={!newCatGroup || !newCatLabel.trim()}
-                  className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:bg-gray-200 disabled:text-gray-400"
+                  disabled={
+                    (!newCatGroup || (newCatGroup === '__new__' && !newCatGroupCustom.trim())) ||
+                    !newCatLabel.trim()
+                  }
+                  className="self-start rounded-lg bg-emerald-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:bg-gray-200 disabled:text-gray-400"
                 >
-                  Add
+                  Add category
                 </button>
               </div>
             </div>
 
             {/* List user-created categories with delete */}
-            {groups.map((group) => {
-              const cats = byGroup(group).filter((c) => c.userId);
+            {userGroups.map((group) => {
+              const cats = userByGroup(group);
               if (cats.length === 0) return null;
               return (
                 <div key={group}>

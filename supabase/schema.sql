@@ -3,34 +3,17 @@
 -- Mirrors the types in src/types/planner.ts.
 
 -- ---------------------------------------------------------------------------
--- categories  (reference table; seeded from src/lib/constants.ts)
+-- categories  (user-created; groups are arbitrary strings)
 -- ---------------------------------------------------------------------------
 create table if not exists public.categories (
   id         text primary key,
-  "group"    text not null check ("group" in (
-               'Classes','Work','Personal Study',
-               'Job Application','Habits','Other'
-             )),
+  "group"    text not null,
   label      text not null,
   color      text not null,
-  sort_order int  not null default 0
+  sort_order int  not null default 0,
+  user_id    text,          -- null = legacy system default, non-null = user-created
+  parent_id  text references public.categories(id)
 );
-
-insert into public.categories (id, "group", label, color, sort_order) values
-  ('class-se',         'Classes',         'Software Engineering', '#6366f1', 10),
-  ('class-bds',        'Classes',         'Build, Design, Ship',  '#8b5cf6', 20),
-  ('class-pe',         'Classes',         'Program Eval.',        '#a78bfa', 30),
-  ('work-gradlounge',  'Work',            'GradLounge',           '#f59e0b', 40),
-  ('work-demography',  'Work',            'Demography Workshop',  '#f97316', 50),
-  ('personal-study',   'Personal Study',  'Personal Study',       '#10b981', 60),
-  ('job-application',  'Job Application', 'Job Application',      '#3b82f6', 70),
-  ('habit',            'Habits',          'Habits',               '#ec4899', 80),
-  ('other',            'Other',           'Other',                '#6b7280', 90)
-on conflict (id) do update set
-  "group"    = excluded."group",
-  label      = excluded.label,
-  color      = excluded.color,
-  sort_order = excluded.sort_order;
 
 -- ---------------------------------------------------------------------------
 -- tasks
@@ -113,12 +96,31 @@ alter table public.tasks        enable row level security;
 alter table public.log_entries  enable row level security;
 alter table public.wizard_state enable row level security;
 
--- categories: readable by any signed-in user, not writable from the client
-drop policy if exists "categories: read for authenticated" on public.categories;
-create policy "categories: read for authenticated"
+-- categories: read system defaults + own; write own only
+drop policy if exists "categories: read system and own" on public.categories;
+create policy "categories: read system and own"
   on public.categories
   for select to authenticated
-  using (true);
+  using (user_id is null or (select auth.jwt() ->> 'sub') = user_id);
+
+drop policy if exists "categories: insert own" on public.categories;
+create policy "categories: insert own"
+  on public.categories
+  for insert to authenticated
+  with check ((select auth.jwt() ->> 'sub') = user_id);
+
+drop policy if exists "categories: update own" on public.categories;
+create policy "categories: update own"
+  on public.categories
+  for update to authenticated
+  using ((select auth.jwt() ->> 'sub') = user_id)
+  with check ((select auth.jwt() ->> 'sub') = user_id);
+
+drop policy if exists "categories: delete own" on public.categories;
+create policy "categories: delete own"
+  on public.categories
+  for delete to authenticated
+  using ((select auth.jwt() ->> 'sub') = user_id);
 
 -- NOTE: with Clerk third-party auth, the JWT `sub` claim is the Clerk user id
 -- (a text value like "user_2abc..."). We wrap auth.jwt() in a subselect for

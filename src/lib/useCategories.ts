@@ -27,7 +27,7 @@ function fromDb(r: DbCategory): TaskCategory {
 }
 
 export interface UseCategoriesResult {
-  /** All categories visible to this user (system defaults + own). */
+  /** All categories (system + user-created). Used for task display/grouping. */
   categories: TaskCategory[];
   /** Unique group names in display order. */
   groups: string[];
@@ -37,13 +37,10 @@ export interface UseCategoriesResult {
   find: (id: string) => TaskCategory | undefined;
   loading: boolean;
   error: string | null;
-  addGroup: (name: string) => Promise<string | null>;
   addCategory: (group: string, label: string, color: string, parentId?: string) => Promise<string | null>;
   updateCategory: (id: string, updates: { label?: string; color?: string; group?: string }) => Promise<boolean>;
   deleteCategory: (id: string) => Promise<boolean>;
 }
-
-const DEFAULT_COLORS = ['#059669', '#8b5cf6', '#f59e0b', '#3b82f6', '#ec4899', '#f97316', '#10b981', '#6b7280'];
 
 export function useCategories(): UseCategoriesResult {
   const { userId, isLoaded, isSignedIn } = useAuth();
@@ -103,38 +100,6 @@ export function useCategories(): UseCategoriesResult {
     [categories]
   );
 
-  const addGroup = useCallback(
-    async (name: string): Promise<string | null> => {
-      if (!userId) return null;
-      const id = `user-${crypto.randomUUID().slice(0, 8)}`;
-      const cat: TaskCategory = {
-        id,
-        group: name,
-        label: name,
-        color: DEFAULT_COLORS[categories.length % DEFAULT_COLORS.length],
-        parentId: null,
-        userId,
-      };
-      setCategories((prev) => [...prev, cat]);
-      const { error: err } = await supabase.from('categories').insert({
-        id,
-        user_id: userId,
-        group: name,
-        label: name,
-        color: cat.color,
-        sort_order: 100 + categories.length,
-        parent_id: null,
-      });
-      if (err) {
-        setCategories((prev) => prev.filter((c) => c.id !== id));
-        setError(err.message);
-        return null;
-      }
-      return id;
-    },
-    [userId, categories.length, supabase]
-  );
-
   const addCategory = useCallback(
     async (group: string, label: string, color: string, parentId?: string): Promise<string | null> => {
       if (!userId) return null;
@@ -163,7 +128,7 @@ export function useCategories(): UseCategoriesResult {
   const updateCategory = useCallback(
     async (id: string, updates: { label?: string; color?: string; group?: string }): Promise<boolean> => {
       const cat = categories.find((c) => c.id === id);
-      if (!cat || !cat.userId) return false; // can't edit system defaults
+      if (!cat || !cat.userId) return false;
       const snapshot = categories;
       setCategories((prev) => prev.map((c) => (c.id === id ? { ...c, ...updates } : c)));
       const { error: err } = await supabase.from('categories').update(updates).eq('id', id);
@@ -180,7 +145,7 @@ export function useCategories(): UseCategoriesResult {
   const deleteCategory = useCallback(
     async (id: string): Promise<boolean> => {
       const cat = categories.find((c) => c.id === id);
-      if (!cat || !cat.userId) return false; // can't delete system defaults
+      if (!cat || !cat.userId) return false;
       const snapshot = categories;
       setCategories((prev) => prev.filter((c) => c.id !== id));
       const { error: err } = await supabase.from('categories').delete().eq('id', id);
@@ -201,7 +166,6 @@ export function useCategories(): UseCategoriesResult {
     find,
     loading,
     error,
-    addGroup,
     addCategory,
     updateCategory,
     deleteCategory,
