@@ -94,16 +94,20 @@ export default function PomodoroView() {
           }}
         >
           {workMinutes === 0
-            ? 'Start focusing to grow your conservatory'
-            : workMinutes < 10
-              ? 'Sprouts are appearing…'
-              : workMinutes < 30
-                ? 'Your garden is blooming!'
-                : workMinutes < 60
-                  ? 'The wildlife is settling in'
-                  : workMinutes < 90
-                    ? 'A thriving conservatory!'
-                    : 'A masterpiece — Lincoln Park would be proud'}
+            ? 'Start focusing to build your conservatory'
+            : workMinutes < 3
+              ? 'The crane is arriving…'
+              : workMinutes < 7
+                ? 'Building the greenhouse…'
+                : workMinutes < 15
+                  ? 'Sprouts are appearing!'
+                  : workMinutes < 35
+                    ? 'Your garden is blooming'
+                    : workMinutes < 60
+                      ? 'The wildlife is settling in'
+                      : workMinutes < 100
+                        ? 'A thriving conservatory!'
+                        : 'Picnic time — you earned it!'}
         </p>
         {showDevSlider && (
           <div className="mt-2 flex items-center gap-2 rounded-lg border border-dashed border-amber-300 bg-amber-50 px-3 py-2">
