@@ -119,6 +119,6 @@ Supabase MCP server connected for direct DB inspection from Claude Code.
 - Page files are thin server components that import a single `'use client'` view component
 - All interactivity is in client components
 - Drag & drop (Eisenhower matrix) uses `@dnd-kit/core` with `useDraggable`/`useDroppable`
-- Deep Focus Timer is a stopwatch (counts up), break = 20% of work time
+- Deep Focus Timer is a stopwatch (counts up), break = 20% of work time. Includes a **Conservatory Scene** (`src/components/pomodoro/ConservatoryScene.tsx`) — an SVG illustration inspired by Lincoln Park Conservatory that progressively reveals plants, flowers, a pond, birds, bunnies, and butterflies based on accumulated work minutes (thresholds at 3, 6, 10, 15, 20, 30, 45, 60, 90 min). **Dev mode**: Shift+click the status text below the scene to reveal a time slider (0–120 min) for previewing all growth stages
 - Activity Log tracks task switches, warns when context-switching is high (>6 switches), and shows saved history via a month calendar with dot indicators for days with data
 - Environment variables: `NEXT_PUBLIC_*` keys are safe for browser; `SUPABASE_SECRET_KEY`, `CLERK_SECRET_KEY`, `NEWS_API_KEY` are server-only. All in `.env.local` (gitignored).
