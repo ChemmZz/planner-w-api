@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { UserButton } from '@clerk/nextjs';
 import WalkingSpino from './WalkingSpino';
 
 const NAV_LINKS = [
@@ -122,7 +123,10 @@ export default function Sidebar() {
         })}
       </nav>
 
-      <div className="px-3 text-xs text-gray-400">v1.0</div>
+      <div className="flex items-center justify-between px-3">
+        <UserButton />
+        <span className="text-xs text-gray-400">v1.0</span>
+      </div>
       <WalkingSpino />
     </aside>
   );
