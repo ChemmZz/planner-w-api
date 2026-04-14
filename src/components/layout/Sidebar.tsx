@@ -77,7 +77,12 @@ const NAV_LINKS = [
   },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  /** Called after a nav link is clicked — used to close the mobile drawer. */
+  onNavigate?: () => void;
+}
+
+export default function Sidebar({ onNavigate }: SidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -102,6 +107,7 @@ export default function Sidebar() {
             <Link
               key={href}
               href={href}
+              onClick={onNavigate}
               className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                 isActive
                   ? 'bg-indigo-50 text-indigo-600'

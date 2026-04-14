@@ -50,7 +50,7 @@ function WeatherBadge() {
 
   return (
     <div
-      className="flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs"
+      className="hidden sm:flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs"
       style={{ borderColor: 'var(--color-surface-border)' }}
     >
       <span title={`${weather.label} in Chicago`} className="cursor-default">
@@ -72,7 +72,11 @@ function WeatherBadge() {
   );
 }
 
-export default function TopBar() {
+interface TopBarProps {
+  onMenuToggle?: () => void;
+}
+
+export default function TopBar({ onMenuToggle }: TopBarProps) {
   const { deleteAllHistory, savedHistory } = useLogHistory();
 
   async function handleDeleteHistory() {
@@ -90,24 +94,37 @@ export default function TopBar() {
 
   return (
     <header
-      className="flex h-14 flex-shrink-0 items-center justify-end gap-3 border-b px-6"
+      className="flex h-14 flex-shrink-0 items-center gap-3 border-b px-4 md:px-6 md:justify-end"
       style={{
         backgroundColor: 'var(--color-surface-raised)',
         borderColor: 'var(--color-surface-border)',
       }}
     >
-      <WeatherBadge />
-      <UserButton>
-        <UserButton.MenuItems>
-          <UserButton.Action label="manageAccount" />
-          <UserButton.Action
-            label="Delete log history"
-            labelIcon={<TrashIcon />}
-            onClick={handleDeleteHistory}
-          />
-          <UserButton.Action label="signOut" />
-        </UserButton.MenuItems>
-      </UserButton>
+      {/* Hamburger — mobile only */}
+      <button
+        onClick={onMenuToggle}
+        className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 md:hidden"
+        aria-label="Toggle navigation"
+      >
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+
+      <div className="ml-auto flex items-center gap-3">
+        <WeatherBadge />
+        <UserButton>
+          <UserButton.MenuItems>
+            <UserButton.Action label="manageAccount" />
+            <UserButton.Action
+              label="Delete log history"
+              labelIcon={<TrashIcon />}
+              onClick={handleDeleteHistory}
+            />
+            <UserButton.Action label="signOut" />
+          </UserButton.MenuItems>
+        </UserButton>
+      </div>
     </header>
   );
 }

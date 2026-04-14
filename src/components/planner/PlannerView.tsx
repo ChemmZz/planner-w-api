@@ -72,7 +72,7 @@ export default function PlannerView() {
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
-      <div className="space-y-4 py-4">
+      <div className="mx-auto max-w-4xl space-y-4 py-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Eisenhower Matrix</h1>
           <p className="mt-1 text-sm text-gray-500">
@@ -81,7 +81,7 @@ export default function PlannerView() {
         </div>
 
         {/* Matrix grid */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {QUADRANTS.map((q) => {
             const qTasks = tasks.filter((t) => t.quadrant === q.id);
             return (
