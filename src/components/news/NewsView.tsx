@@ -68,11 +68,11 @@ export default function NewsView() {
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder="Search news…"
-          className="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 outline-none focus:border-indigo-300"
+          className="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 outline-none focus:border-emerald-300"
         />
         <button
           type="submit"
-          className="rounded-lg bg-indigo-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-600"
+          className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
         >
           Search
         </button>
@@ -132,7 +132,7 @@ export default function NewsView() {
                   <span>·</span>
                   <span>{timeAgo(article.publishedAt)}</span>
                 </div>
-                <h2 className="mb-1 text-sm font-semibold leading-snug text-gray-900 group-hover:text-indigo-600">
+                <h2 className="mb-1 text-sm font-semibold leading-snug text-gray-900 group-hover:text-emerald-700">
                   {article.title}
                 </h2>
                 {article.description && (

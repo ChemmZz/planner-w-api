@@ -20,8 +20,8 @@ export default function TaskCard({ task, category, onToggle }: TaskCardProps) {
         onClick={onToggle}
         className={`mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded border-2 transition-colors ${
           task.done
-            ? 'border-indigo-500 bg-indigo-500 text-white'
-            : 'border-gray-300 hover:border-indigo-400'
+            ? 'border-emerald-600 bg-emerald-600 text-white'
+            : 'border-gray-300 hover:border-emerald-400'
         }`}
       >
         {task.done && (

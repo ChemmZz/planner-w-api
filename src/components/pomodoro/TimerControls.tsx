@@ -38,7 +38,7 @@ export default function TimerControls({
             {!isRunning ? (
               <button
                 onClick={onStart}
-                className="rounded-full bg-indigo-500 px-8 py-3 text-sm font-semibold text-white transition-colors hover:bg-indigo-600"
+                className="rounded-full bg-emerald-600 px-8 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
               >
                 {workElapsed === 0 ? 'Start Focus' : 'Resume'}
               </button>

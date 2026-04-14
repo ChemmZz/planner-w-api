@@ -10,7 +10,7 @@ interface TimerCircleProps {
 }
 
 export default function TimerCircle({ elapsed, totalBreak, mode }: TimerCircleProps) {
-  const color = mode === 'work' ? '#6366f1' : '#10b981';
+  const color = mode === 'work' ? '#059669' : '#10b981';
 
   // In work mode: no arc progress, just counts up
   // In break mode: arc shows remaining/total

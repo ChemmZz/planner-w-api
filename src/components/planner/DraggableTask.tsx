@@ -54,8 +54,8 @@ export default function DraggableTask({ task, compact, onToggleDone }: Draggable
             onClick={(e) => { e.stopPropagation(); onToggleDone(); }}
             className={`flex h-3 w-3 flex-shrink-0 items-center justify-center rounded-sm border ${
               task.done
-                ? 'border-indigo-500 bg-indigo-500'
-                : 'border-gray-300 hover:border-indigo-400'
+                ? 'border-emerald-600 bg-emerald-600'
+                : 'border-gray-300 hover:border-emerald-400'
             }`}
           >
             {task.done && (
@@ -98,8 +98,8 @@ export default function DraggableTask({ task, compact, onToggleDone }: Draggable
             onClick={(e) => { e.stopPropagation(); onToggleDone(); }}
             className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border-2 ${
               task.done
-                ? 'border-indigo-500 bg-indigo-500 text-white'
-                : 'border-gray-300 hover:border-indigo-400'
+                ? 'border-emerald-600 bg-emerald-600 text-white'
+                : 'border-gray-300 hover:border-emerald-400'
             }`}
           >
             {task.done && (

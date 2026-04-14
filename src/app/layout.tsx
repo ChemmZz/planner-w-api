@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Daily Planner",
-  description: "Plan your day with focus",
+  title: "Dinotes",
+  description: "Your daily planner — plan, focus, grow",
 };
 
 export default function RootLayout({

@@ -38,15 +38,15 @@ export default function IntakeWizard() {
           return (
             <div key={label} className="flex items-center gap-2">
               {i > 0 && (
-                <div className={`h-0.5 w-8 rounded ${isDone ? 'bg-indigo-400' : 'bg-gray-200'}`} />
+                <div className={`h-0.5 w-8 rounded ${isDone ? 'bg-emerald-400' : 'bg-gray-200'}`} />
               )}
               <button
                 onClick={() => setStep(stepNum)}
                 className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-colors ${
                   isActive
-                    ? 'bg-indigo-500 text-white'
+                    ? 'bg-emerald-600 text-white'
                     : isDone
-                      ? 'bg-indigo-100 text-indigo-600'
+                      ? 'bg-emerald-100 text-emerald-700'
                       : 'bg-gray-100 text-gray-400'
                 }`}
               >
@@ -58,7 +58,7 @@ export default function IntakeWizard() {
                   stepNum
                 )}
               </button>
-              <span className={`text-xs font-medium ${isActive ? 'text-indigo-600' : 'text-gray-400'}`}>
+              <span className={`text-xs font-medium ${isActive ? 'text-emerald-700' : 'text-gray-400'}`}>
                 {label}
               </span>
             </div>
@@ -85,14 +85,14 @@ export default function IntakeWizard() {
         {step < 2 ? (
           <button
             onClick={() => setStep(2)}
-            className="rounded-lg bg-indigo-500 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-600"
+            className="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-emerald-700"
           >
             Tasks
           </button>
         ) : (
           <button
             onClick={handleFinish}
-            className="rounded-lg bg-indigo-500 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-600"
+            className="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-emerald-700"
           >
             Start My Day
           </button>

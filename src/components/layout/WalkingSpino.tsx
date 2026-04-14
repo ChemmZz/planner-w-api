@@ -13,39 +13,39 @@ function SpinoWalk() {
   return (
     <svg width="80" height="70" viewBox="0 0 80 70" fill="none">
       {/* tail */}
-      <polygon points="22,30 4,20 6,26 18,34" fill="#818cf8" />
-      <polygon points="18,34 6,26 2,30 14,36" fill="#6366f1" />
+      <polygon points="22,30 4,20 6,26 18,34" fill="#34d399" />
+      <polygon points="18,34 6,26 2,30 14,36" fill="#059669" />
       {/* body */}
-      <polygon points="22,24 42,18 48,22 48,38 40,42 22,40" fill="#6366f1" />
+      <polygon points="22,24 42,18 48,22 48,38 40,42 22,40" fill="#059669" />
       {/* belly */}
       <polygon points="26,38 40,42 48,38 48,34 38,36 26,36" fill="#a5b4fc" />
       {/* sail */}
-      <polygon points="24,24 28,4 34,2 38,4 42,18 36,20 30,20" fill="#818cf8" />
+      <polygon points="24,24 28,4 34,2 38,4 42,18 36,20 30,20" fill="#34d399" />
       <polygon points="28,18 30,8 34,6 36,8 38,18" fill="#a5b4fc" opacity="0.5" />
       {/* neck */}
-      <polygon points="48,22 56,12 60,14 52,26 48,26" fill="#6366f1" />
+      <polygon points="48,22 56,12 60,14 52,26 48,26" fill="#059669" />
       {/* head */}
-      <polygon points="56,8 70,6 72,10 70,14 60,16 56,14" fill="#6366f1" />
+      <polygon points="56,8 70,6 72,10 70,14 60,16 56,14" fill="#059669" />
       {/* lower jaw */}
       <polygon points="60,14 72,12 74,14 70,16 60,16" fill="#7c3aed" />
       {/* eye */}
       <circle cx="64" cy="9" r="2.5" fill="white" />
       <circle cx="64.8" cy="8.6" r="1.3" fill="#1e1b4b" />
       {/* nostril */}
-      <circle cx="70" cy="8" r="0.8" fill="#4f46e5" />
+      <circle cx="70" cy="8" r="0.8" fill="#047857" />
       {/* mouth line */}
-      <line x1="62" y1="14" x2="72" y2="13" stroke="#4f46e5" strokeWidth="0.8" />
+      <line x1="62" y1="14" x2="72" y2="13" stroke="#047857" strokeWidth="0.8" />
       {/* tiny arms */}
-      <polygon points="46,28 50,34 48,36 44,32" fill="#4f46e5" />
-      <polygon points="48,36 52,38 50,40 46,38" fill="#4f46e5" />
+      <polygon points="46,28 50,34 48,36 44,32" fill="#047857" />
+      <polygon points="48,36 52,38 50,40 46,38" fill="#047857" />
       {/* RIGHT LEG (front stride) */}
       <g className="spino-leg-right">
         {/* thigh */}
-        <polygon points="38,38 42,40 44,54 38,52" fill="#4f46e5" />
+        <polygon points="38,38 42,40 44,54 38,52" fill="#047857" />
         {/* shin */}
-        <polygon points="38,52 44,54 48,62 42,60" fill="#4f46e5" />
+        <polygon points="38,52 44,54 48,62 42,60" fill="#047857" />
         {/* foot */}
-        <polygon points="42,60 48,62 54,64 48,66 40,64" fill="#818cf8" />
+        <polygon points="42,60 48,62 54,64 48,66 40,64" fill="#34d399" />
       </g>
       {/* LEFT LEG (back stride) */}
       <g className="spino-leg-left">
@@ -54,7 +54,7 @@ function SpinoWalk() {
         {/* shin */}
         <polygon points="24,52 28,54 24,62 20,60" fill="#4338ca" />
         {/* foot */}
-        <polygon points="20,60 24,62 28,64 22,66 16,64" fill="#6366f1" />
+        <polygon points="20,60 24,62 28,64 22,66 16,64" fill="#059669" />
       </g>
     </svg>
   );
@@ -65,28 +65,28 @@ function SpinoSwim() {
   return (
     <svg width="86" height="48" viewBox="0 0 86 48" fill="none">
       {/* tail */}
-      <polygon points="14,24 2,18 4,22 12,28" fill="#818cf8" />
-      <polygon points="12,28 4,22 2,26 10,30" fill="#6366f1" />
+      <polygon points="14,24 2,18 4,22 12,28" fill="#34d399" />
+      <polygon points="12,28 4,22 2,26 10,30" fill="#059669" />
       {/* body — horizontal */}
-      <polygon points="14,20 48,16 52,20 52,32 44,36 14,34" fill="#6366f1" />
+      <polygon points="14,20 48,16 52,20 52,32 44,36 14,34" fill="#059669" />
       {/* belly */}
       <polygon points="18,32 44,36 52,32 52,28 42,30 18,30" fill="#a5b4fc" />
       {/* sail — sticking up */}
-      <polygon points="18,20 22,2 28,0 34,2 40,16 34,18 24,18" fill="#818cf8" />
+      <polygon points="18,20 22,2 28,0 34,2 40,16 34,18 24,18" fill="#34d399" />
       <polygon points="22,14 26,4 30,3 32,5 36,14" fill="#a5b4fc" opacity="0.5" />
       {/* neck — more horizontal */}
-      <polygon points="52,20 62,14 66,16 56,24 52,24" fill="#6366f1" />
+      <polygon points="52,20 62,14 66,16 56,24 52,24" fill="#059669" />
       {/* head */}
-      <polygon points="62,10 76,8 78,12 76,16 66,18 62,16" fill="#6366f1" />
+      <polygon points="62,10 76,8 78,12 76,16 66,18 62,16" fill="#059669" />
       <polygon points="66,16 78,14 80,16 76,18 66,18" fill="#7c3aed" />
       {/* eye */}
       <circle cx="70" cy="11" r="2.2" fill="white" />
       <circle cx="70.7" cy="10.6" r="1.1" fill="#1e1b4b" />
-      <circle cx="76" cy="10" r="0.7" fill="#4f46e5" />
-      <line x1="68" y1="16" x2="78" y2="15" stroke="#4f46e5" strokeWidth="0.8" />
+      <circle cx="76" cy="10" r="0.7" fill="#047857" />
+      <line x1="68" y1="16" x2="78" y2="15" stroke="#047857" strokeWidth="0.8" />
       {/* paddle legs peeking below body */}
       <g className="spino-paddle-r">
-        <polygon points="40,34 44,36 46,42 40,40" fill="#4f46e5" />
+        <polygon points="40,34 44,36 46,42 40,40" fill="#047857" />
       </g>
       <g className="spino-paddle-l">
         <polygon points="24,34 28,36 26,42 22,40" fill="#4338ca" />

@@ -181,7 +181,7 @@ export default function LogView() {
             type="time"
             value={time}
             onChange={(e) => setTime(e.target.value)}
-            className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 outline-none focus:border-indigo-300"
+            className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 outline-none focus:border-emerald-300"
           />
         </div>
         <div className="flex-1">
@@ -194,14 +194,14 @@ export default function LogView() {
             onChange={(e) => setActivity(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Working on SE homework, scrolling Twitter, lunch…"
-            className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 outline-none focus:border-indigo-300"
+            className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 outline-none focus:border-emerald-300"
           />
         </div>
         <div className="flex items-end sm:flex-shrink-0">
           <button
             onClick={handleAdd}
             disabled={!time.trim() || !activity.trim()}
-            className="w-full rounded-lg bg-indigo-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-600 disabled:bg-gray-200 disabled:text-gray-400 sm:w-auto"
+            className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:bg-gray-200 disabled:text-gray-400 sm:w-auto"
           >
             Log
           </button>
@@ -278,7 +278,7 @@ export default function LogView() {
                     <div className="flex flex-col items-center">
                       <div
                         className={`h-2.5 w-2.5 rounded-full ${
-                          isSwitch ? 'bg-amber-400' : 'bg-indigo-400'
+                          isSwitch ? 'bg-amber-400' : 'bg-emerald-400'
                         }`}
                       />
                     </div>
@@ -370,19 +370,19 @@ export default function LogView() {
                       onClick={() => setSelectedDayKey(key)}
                       className={`relative flex aspect-square flex-col items-center justify-center rounded-lg text-sm transition-colors ${
                         isSelected
-                          ? 'bg-indigo-500 text-white'
+                          ? 'bg-emerald-600 text-white'
                           : hasData
-                            ? 'text-gray-800 hover:bg-indigo-50'
+                            ? 'text-gray-800 hover:bg-emerald-50'
                             : inMonth
                               ? 'text-gray-600 hover:bg-gray-50'
                               : 'text-gray-300 hover:bg-gray-50'
-                      } ${isToday && !isSelected ? 'ring-1 ring-indigo-300' : ''}`}
+                      } ${isToday && !isSelected ? 'ring-1 ring-emerald-300' : ''}`}
                     >
                       <span>{date.getDate()}</span>
                       {hasData && (
                         <span
                           className={`absolute bottom-1 h-1 w-1 rounded-full ${
-                            isSelected ? 'bg-white' : 'bg-indigo-500'
+                            isSelected ? 'bg-white' : 'bg-emerald-600'
                           }`}
                         />
                       )}
@@ -423,7 +423,7 @@ export default function LogView() {
                         </span>
                         <div
                           className={`h-2 w-2 rounded-full ${
-                            isSwitch ? 'bg-amber-300' : 'bg-indigo-300'
+                            isSwitch ? 'bg-amber-300' : 'bg-emerald-300'
                           }`}
                         />
                         <span className="flex-1 text-sm text-gray-600">

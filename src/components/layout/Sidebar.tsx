@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import DinotesLogo from './DinotesLogo';
 import WalkingSpino from './WalkingSpino';
 
 const NAV_LINKS = [
@@ -106,8 +107,9 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
         borderColor: 'var(--color-surface-border)',
       }}
     >
-      <div className="mb-8 px-3">
-        <span className="text-xl font-bold text-indigo-600">my-planner</span>
+      <div className="mb-8 flex items-center gap-3 px-3">
+        <DinotesLogo size={40} />
+        <span className="text-2xl font-bold text-emerald-700">Dinotes</span>
       </div>
 
       <nav className="flex-1 space-y-1">
@@ -121,16 +123,16 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
               onClick={onNavigate}
               className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                 isActive
-                  ? 'bg-indigo-50 text-indigo-600'
+                  ? 'bg-emerald-50 text-emerald-700'
                   : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
               }`}
             >
-              <span className={isActive ? 'text-indigo-500' : 'text-gray-400'}>
+              <span className={isActive ? 'text-emerald-600' : 'text-gray-400'}>
                 {icon}
               </span>
               {label}
               {badge && (
-                <span className="ml-auto rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-semibold text-indigo-600">
+                <span className="ml-auto rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
                   {badge}
                 </span>
               )}

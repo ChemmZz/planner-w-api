@@ -49,7 +49,7 @@ function contributionGrid(weeks: number): string[][] {
   return grid;
 }
 
-const PRESET_COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#ef4444', '#14b8a6'];
+const PRESET_COLORS = ['#059669', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#ef4444', '#14b8a6'];
 const PRESET_ICONS = ['🏋️', '📖', '🧘', '🏃', '💧', '🎸', '🎨', '💤', '🥗', '📝', '✅'];
 
 // ---- components ------------------------------------------------------------
@@ -229,7 +229,7 @@ function AddHabitForm({ onAdd }: { onAdd: (name: string, icon: string, color: st
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [icon, setIcon] = useState('✅');
-  const [color, setColor] = useState('#6366f1');
+  const [color, setColor] = useState('#059669');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -238,7 +238,7 @@ function AddHabitForm({ onAdd }: { onAdd: (name: string, icon: string, color: st
     if (ok) {
       setName('');
       setIcon('✅');
-      setColor('#6366f1');
+      setColor('#059669');
       setOpen(false);
     }
   }
@@ -247,7 +247,7 @@ function AddHabitForm({ onAdd }: { onAdd: (name: string, icon: string, color: st
     return (
       <button
         onClick={() => setOpen(true)}
-        className="w-full rounded-2xl border-2 border-dashed border-gray-200 py-4 text-sm font-medium text-gray-400 hover:border-indigo-300 hover:text-indigo-500 transition-colors"
+        className="w-full rounded-2xl border-2 border-dashed border-gray-200 py-4 text-sm font-medium text-gray-400 hover:border-emerald-300 hover:text-emerald-600 transition-colors"
       >
         + Add a habit
       </button>
@@ -269,7 +269,7 @@ function AddHabitForm({ onAdd }: { onAdd: (name: string, icon: string, color: st
           onChange={(e) => setName(e.target.value)}
           placeholder="e.g. Meditate, Run, Read…"
           autoFocus
-          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 outline-none focus:border-indigo-300"
+          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 outline-none focus:border-emerald-300"
         />
       </div>
 
@@ -285,7 +285,7 @@ function AddHabitForm({ onAdd }: { onAdd: (name: string, icon: string, color: st
               type="button"
               onClick={() => setIcon(ic)}
               className={`flex h-8 w-8 items-center justify-center rounded-lg text-base transition-all ${
-                icon === ic ? 'bg-indigo-50 ring-2 ring-indigo-400' : 'bg-gray-50 hover:bg-gray-100'
+                icon === ic ? 'bg-emerald-50 ring-2 ring-emerald-400' : 'bg-gray-50 hover:bg-gray-100'
               }`}
             >
               {ic}
@@ -321,7 +321,7 @@ function AddHabitForm({ onAdd }: { onAdd: (name: string, icon: string, color: st
         <button
           type="submit"
           disabled={!name.trim()}
-          className="rounded-lg bg-indigo-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-600 disabled:bg-gray-200 disabled:text-gray-400"
+          className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:bg-gray-200 disabled:text-gray-400"
         >
           Add
         </button>

@@ -85,7 +85,7 @@ export default function StepHabits() {
         </p>
         <Link
           href="/habits"
-          className="inline-block rounded-lg bg-indigo-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-600"
+          className="inline-block rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
         >
           Set up habits
         </Link>
@@ -140,7 +140,7 @@ export default function StepHabits() {
       <div className="text-center pt-2">
         <Link
           href="/habits"
-          className="text-xs text-gray-400 hover:text-indigo-500 transition-colors"
+          className="text-xs text-gray-400 hover:text-emerald-600 transition-colors"
         >
           Manage habits
         </Link>

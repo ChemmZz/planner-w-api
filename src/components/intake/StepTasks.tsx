@@ -50,7 +50,7 @@ export default function StepTasks() {
                           value={task.text}
                           onChange={(e) => updateTaskText(task.id, e.target.value)}
                           placeholder="Describe the task…"
-                          className="flex-1 rounded-md border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm text-gray-800 outline-none focus:border-indigo-300"
+                          className="flex-1 rounded-md border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm text-gray-800 outline-none focus:border-emerald-300"
                         />
                         <button
                           onClick={() => removeTask(task.id)}
@@ -127,7 +127,7 @@ export default function StepTasks() {
                           value={task.note || ''}
                           onChange={(e) => setTaskNote(task.id, e.target.value)}
                           placeholder="Add context (e.g. meeting with Alex to study)"
-                          className="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs text-gray-600 outline-none focus:border-indigo-300"
+                          className="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs text-gray-600 outline-none focus:border-emerald-300"
                         />
                       )}
                     </div>

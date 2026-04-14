@@ -1,8 +1,8 @@
 @AGENTS.md
 
-# my-planner
+# Dinotes
 
-Personal daily planner web app. Session state resets on refresh; activity log can be explicitly saved to Supabase per-user.
+Personal daily planner web app (dino + notes). Session state resets on refresh; activity log and habit tracking are persisted to Supabase per-user. Evernote-inspired design with emerald green accent palette.
 
 ## Tech Stack
 
