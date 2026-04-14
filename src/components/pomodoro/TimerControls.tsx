@@ -9,6 +9,7 @@ interface TimerControlsProps {
   onFinishWork: () => void;
   onReset: () => void;
   sessionCount: number;
+  isResetting?: boolean;
 }
 
 function formatDuration(secs: number): string {
@@ -27,6 +28,7 @@ export default function TimerControls({
   onFinishWork,
   onReset,
   sessionCount,
+  isResetting,
 }: TimerControlsProps) {
   const breakTime = Math.ceil(workElapsed * 0.2);
 
@@ -75,7 +77,8 @@ export default function TimerControls({
         )}
         <button
           onClick={onReset}
-          className="rounded-full border border-gray-200 px-6 py-3 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-50"
+          disabled={isResetting}
+          className="rounded-full border border-gray-200 px-6 py-3 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Reset
         </button>

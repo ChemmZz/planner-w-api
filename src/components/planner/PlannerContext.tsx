@@ -26,6 +26,7 @@ export interface TimerState {
   breakDuration: number;
   sessionCount: number;
   selectedTaskId: string | null;
+  isResetting: boolean;
 }
 
 interface PlannerActions {
@@ -48,6 +49,7 @@ interface PlannerActions {
   timerPause: () => void;
   timerFinishWork: () => void;
   timerReset: () => void;
+  timerResetComplete: () => void;
   timerSetTask: (id: string | null) => void;
 }
 
@@ -75,6 +77,7 @@ const INITIAL_TIMER: TimerState = {
   breakDuration: 0,
   sessionCount: 1,
   selectedTaskId: null,
+  isResetting: false,
 };
 
 export default function PlannerProvider({ children }: { children: ReactNode }) {
@@ -200,6 +203,25 @@ export default function PlannerProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const timerReset = useCallback(() => {
+    setTimer((prev) => {
+      // Nothing to destroy — instant reset
+      if (prev.accumulated === 0 && prev.workElapsed === 0 && !prev.startedAt) {
+        return { ...INITIAL_TIMER, sessionCount: prev.sessionCount, selectedTaskId: prev.selectedTaskId };
+      }
+      // Pause timer but keep workElapsed so scene stays visible during meteorite
+      const runSecs = prev.startedAt ? Math.round((Date.now() - prev.startedAt) / 1000) : 0;
+      return {
+        ...prev,
+        isRunning: false,
+        startedAt: null,
+        accumulated: prev.accumulated + runSecs,
+        workElapsed: prev.mode === 'work' ? prev.accumulated + runSecs : prev.workElapsed,
+        isResetting: true,
+      };
+    });
+  }, []);
+
+  const timerResetComplete = useCallback(() => {
     setTimer((prev) => ({
       ...INITIAL_TIMER,
       sessionCount: prev.sessionCount,
@@ -234,6 +256,7 @@ export default function PlannerProvider({ children }: { children: ReactNode }) {
         timerPause,
         timerFinishWork,
         timerReset,
+        timerResetComplete,
         timerSetTask,
       }}
     >

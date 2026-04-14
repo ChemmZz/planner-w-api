@@ -14,8 +14,16 @@ export default function PomodoroView() {
     timerPause,
     timerFinishWork,
     timerReset,
+    timerResetComplete,
     timerSetTask,
   } = usePlanner();
+
+  // Safety timeout: if meteorite animation doesn't fire onAnimationEnd (e.g. tab hidden), force complete
+  useEffect(() => {
+    if (!timer.isResetting) return;
+    const id = setTimeout(timerResetComplete, 3200);
+    return () => clearTimeout(id);
+  }, [timer.isResetting, timerResetComplete]);
 
   // Recompute elapsed from the stored timestamp every 250ms
   const [elapsed, setElapsed] = useState(0);
@@ -82,11 +90,12 @@ export default function PomodoroView() {
         onFinishWork={timerFinishWork}
         onReset={timerReset}
         sessionCount={timer.sessionCount}
+        isResetting={timer.isResetting}
       />
 
       {/* Conservatory — grows based on accumulated work time */}
       <div className="w-full">
-        <ConservatoryScene workMinutes={workMinutes} />
+        <ConservatoryScene workMinutes={workMinutes} isResetting={timer.isResetting} onResetComplete={timerResetComplete} />
         <p
           className="mt-1 text-center text-[10px] text-gray-400 select-none"
           onClick={(e) => {
@@ -94,20 +103,28 @@ export default function PomodoroView() {
           }}
         >
           {workMinutes === 0
-            ? 'Start focusing to build your conservatory'
-            : workMinutes < 3
-              ? 'The crane is arriving…'
-              : workMinutes < 7
-                ? 'Building the greenhouse…'
+            ? 'Barren land awaits your focus…'
+            : workMinutes < 5
+              ? 'Dry soil baking in the sun…'
+              : workMinutes < 12
+                ? 'Rain is falling — the grass is growing!'
                 : workMinutes < 15
-                  ? 'Sprouts are appearing!'
-                  : workMinutes < 35
-                    ? 'Your garden is blooming'
-                    : workMinutes < 60
-                      ? 'The wildlife is settling in'
-                      : workMinutes < 100
-                        ? 'A thriving conservatory!'
-                        : 'Picnic time — you earned it!'}
+                  ? 'Fresh green grass!'
+                  : workMinutes < 22
+                    ? 'Rain again — a pond is forming…'
+                    : workMinutes < 25
+                      ? 'A beautiful pond appears!'
+                      : workMinutes < 34
+                        ? 'Building the greenhouse…'
+                        : workMinutes < 50
+                          ? 'Sprouts are appearing!'
+                          : workMinutes < 80
+                            ? 'Your garden is blooming'
+                            : workMinutes < 115
+                              ? 'The wildlife is settling in'
+                              : workMinutes < 150
+                                ? 'A thriving conservatory!'
+                                : 'Picnic time — you earned it!'}
         </p>
         {showDevSlider && (
           <div className="mt-2 flex items-center gap-2 rounded-lg border border-dashed border-amber-300 bg-amber-50 px-3 py-2">
@@ -115,7 +132,7 @@ export default function PomodoroView() {
             <input
               type="range"
               min="0"
-              max="120"
+              max="155"
               value={workMinutes}
               onChange={(e) => setDevOverride(Number(e.target.value))}
               className="flex-1"
