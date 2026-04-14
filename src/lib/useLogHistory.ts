@@ -37,6 +37,12 @@ export interface UseLogHistoryResult {
    * Returns `true` on success.
    */
   saveToday: (entries: LogEntry[]) => Promise<boolean>;
+  /**
+   * Delete every saved log entry for the current user. Returns `true` on
+   * success. RLS enforces scoping, but we also `.eq('user_id', userId)` to
+   * make intent explicit and keep the query safe if RLS is ever relaxed.
+   */
+  deleteAllHistory: () => Promise<boolean>;
 }
 
 /**
@@ -119,5 +125,20 @@ export function useLogHistory(): UseLogHistoryResult {
     [userId, supabase]
   );
 
-  return { savedHistory, loading, error, saving, saveToday };
+  const deleteAllHistory = useCallback(async (): Promise<boolean> => {
+    if (!userId) return false;
+    const { error: err } = await supabase
+      .from('log_entries')
+      .delete()
+      .eq('user_id', userId);
+    if (err) {
+      setError(err.message);
+      return false;
+    }
+    setSavedHistory([]);
+    setError(null);
+    return true;
+  }, [userId, supabase]);
+
+  return { savedHistory, loading, error, saving, saveToday, deleteAllHistory };
 }

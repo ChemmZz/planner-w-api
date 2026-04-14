@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { usePlanner } from '@/components/planner/PlannerContext';
 import { useLogHistory } from '@/lib/useLogHistory';
 import type { LogEntry } from '@/types/planner';
@@ -11,6 +11,10 @@ function dayKey(ts: number): string {
   const mm = String(d.getMonth() + 1).padStart(2, '0');
   const dd = String(d.getDate()).padStart(2, '0');
   return `${yyyy}-${mm}-${dd}`;
+}
+
+function dayKeyFromDate(d: Date): string {
+  return dayKey(d.getTime());
 }
 
 function dayLabel(key: string): string {
@@ -28,6 +32,21 @@ function dayLabel(key: string): string {
     year: 'numeric',
   });
 }
+
+// 6×7 grid of Dates covering the view month — includes leading/trailing days
+// from the adjacent months so every calendar has exactly 42 cells.
+function getMonthGrid(year: number, month: number): Date[] {
+  const first = new Date(year, month, 1);
+  const startOffset = first.getDay(); // 0 = Sunday
+  const start = new Date(year, month, 1 - startOffset);
+  const cells: Date[] = [];
+  for (let i = 0; i < 42; i += 1) {
+    cells.push(new Date(start.getFullYear(), start.getMonth(), start.getDate() + i));
+  }
+  return cells;
+}
+
+const WEEKDAY_LETTERS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
 export default function LogView() {
   const { logEntries, addLogEntry, removeLogEntry } = usePlanner();
@@ -76,8 +95,8 @@ export default function LogView() {
   const allAlreadySaved =
     logEntries.length > 0 && logEntries.every((e) => savedIds.has(e.id));
 
-  // Group history by day (descending).
-  const historyByDay = useMemo(() => {
+  // Group history by day for fast calendar lookup.
+  const entriesByDay = useMemo(() => {
     const groups = new Map<string, LogEntry[]>();
     for (const entry of savedHistory) {
       const key = dayKey(entry.createdAt);
@@ -85,8 +104,63 @@ export default function LogView() {
       if (bucket) bucket.push(entry);
       else groups.set(key, [entry]);
     }
-    return [...groups.entries()].sort((a, b) => (a[0] < b[0] ? 1 : -1));
+    return groups;
   }, [savedHistory]);
+
+  const savedDayKeys = useMemo(
+    () => [...entriesByDay.keys()].sort(), // ascending
+    [entriesByDay]
+  );
+
+  // --- Calendar state ---------------------------------------------------
+  const today = useMemo(() => new Date(), []);
+  const todayKey = dayKeyFromDate(today);
+
+  // Default selection: most recent day with data, else today.
+  const [selectedDayKey, setSelectedDayKey] = useState<string>(() =>
+    savedDayKeys.length > 0 ? savedDayKeys[savedDayKeys.length - 1] : todayKey
+  );
+  const [viewMonth, setViewMonth] = useState<{ year: number; month: number }>(() => {
+    const [y, m] = (savedDayKeys[savedDayKeys.length - 1] ?? todayKey)
+      .split('-')
+      .map(Number);
+    return { year: y, month: m - 1 };
+  });
+
+  // When history finishes loading, jump selection to the newest saved day
+  // (only if we're still on today with no data — avoids clobbering user nav).
+  useEffect(() => {
+    if (savedDayKeys.length === 0) return;
+    if (entriesByDay.has(selectedDayKey)) return;
+    const newest = savedDayKeys[savedDayKeys.length - 1];
+    setSelectedDayKey(newest);
+    const [y, m] = newest.split('-').map(Number);
+    setViewMonth({ year: y, month: m - 1 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [savedDayKeys.length]);
+
+  const monthCells = useMemo(
+    () => getMonthGrid(viewMonth.year, viewMonth.month),
+    [viewMonth]
+  );
+
+  const monthLabel = useMemo(
+    () =>
+      new Date(viewMonth.year, viewMonth.month, 1).toLocaleDateString(undefined, {
+        month: 'long',
+        year: 'numeric',
+      }),
+    [viewMonth]
+  );
+
+  function shiftMonth(delta: number) {
+    setViewMonth((prev) => {
+      const d = new Date(prev.year, prev.month + delta, 1);
+      return { year: d.getFullYear(), month: d.getMonth() };
+    });
+  }
+
+  const selectedEntries = entriesByDay.get(selectedDayKey) ?? [];
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 py-4">
@@ -236,7 +310,7 @@ export default function LogView() {
         </div>
       )}
 
-      {/* History */}
+      {/* History — calendar view */}
       <section>
         <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500">
           History
@@ -246,21 +320,99 @@ export default function LogView() {
           <div className="py-6 text-center text-sm text-gray-400">
             Loading saved days…
           </div>
-        ) : historyByDay.length === 0 ? (
-          <div className="py-6 text-center text-sm text-gray-400">
-            Nothing saved yet. Use the button above to save today&apos;s log.
-          </div>
         ) : (
-          <div className="space-y-6">
-            {historyByDay.map(([key, entries]) => (
-              <div key={key}>
-                <h3 className="mb-2 text-xs font-medium text-gray-500">
-                  {dayLabel(key)}
-                </h3>
+          <div className="space-y-4">
+            {/* Calendar */}
+            <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+              {/* Month nav */}
+              <div className="mb-3 flex items-center justify-between">
+                <button
+                  onClick={() => shiftMonth(-1)}
+                  aria-label="Previous month"
+                  className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-50 hover:text-gray-700"
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <div className="text-sm font-semibold text-gray-700">
+                  {monthLabel}
+                </div>
+                <button
+                  onClick={() => shiftMonth(1)}
+                  aria-label="Next month"
+                  className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-50 hover:text-gray-700"
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Weekday letters */}
+              <div className="grid grid-cols-7 gap-1 pb-1 text-center text-[10px] font-semibold uppercase text-gray-400">
+                {WEEKDAY_LETTERS.map((d, i) => (
+                  <div key={i}>{d}</div>
+                ))}
+              </div>
+
+              {/* Day cells */}
+              <div className="grid grid-cols-7 gap-1">
+                {monthCells.map((date) => {
+                  const key = dayKeyFromDate(date);
+                  const inMonth = date.getMonth() === viewMonth.month;
+                  const hasData = entriesByDay.has(key);
+                  const isSelected = key === selectedDayKey;
+                  const isToday = key === todayKey;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setSelectedDayKey(key)}
+                      className={`relative flex aspect-square flex-col items-center justify-center rounded-lg text-sm transition-colors ${
+                        isSelected
+                          ? 'bg-indigo-500 text-white'
+                          : hasData
+                            ? 'text-gray-800 hover:bg-indigo-50'
+                            : inMonth
+                              ? 'text-gray-600 hover:bg-gray-50'
+                              : 'text-gray-300 hover:bg-gray-50'
+                      } ${isToday && !isSelected ? 'ring-1 ring-indigo-300' : ''}`}
+                    >
+                      <span>{date.getDate()}</span>
+                      {hasData && (
+                        <span
+                          className={`absolute bottom-1 h-1 w-1 rounded-full ${
+                            isSelected ? 'bg-white' : 'bg-indigo-500'
+                          }`}
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Selected day's entries */}
+            <div>
+              <h3 className="mb-2 text-xs font-medium text-gray-500">
+                {dayLabel(selectedDayKey)}
+                {selectedEntries.length > 0 && (
+                  <span className="ml-2 text-gray-400">
+                    · {selectedEntries.length} {selectedEntries.length === 1 ? 'entry' : 'entries'}
+                  </span>
+                )}
+              </h3>
+              {selectedEntries.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 py-6 text-center text-sm text-gray-400">
+                  {savedDayKeys.length === 0
+                    ? 'Nothing saved yet. Use the button above to save today\u2019s log.'
+                    : 'No entries saved for this day.'}
+                </div>
+              ) : (
                 <div className="space-y-0.5 rounded-xl border border-gray-200 bg-white p-3">
-                  {entries.map((entry, i) => {
+                  {selectedEntries.map((entry, i) => {
                     const isSwitch =
-                      i > 0 && entry.activity !== entries[i - 1].activity;
+                      i > 0 && entry.activity !== selectedEntries[i - 1].activity;
                     return (
                       <div
                         key={entry.id}
@@ -281,8 +433,8 @@ export default function LogView() {
                     );
                   })}
                 </div>
-              </div>
-            ))}
+              )}
+            </div>
           </div>
         )}
       </section>
