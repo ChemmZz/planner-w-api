@@ -14,11 +14,12 @@ Personal daily planner web app. Session state resets on refresh; activity log ca
 - Supabase — Postgres database for persisted log entries, RLS via Clerk JWT `sub` claim
 - Path alias: `@/*` → `./src/*`
 
-## Pages (9)
+## Pages (10)
 
 | Route | Page | Component |
 |-------|------|-----------|
 | `/` | Intake Wizard | `src/components/intake/IntakeWizard.tsx` |
+| `/habits` | Habit Tracker | `src/components/habits/HabitsView.tsx` |
 | `/checklist` | Today's Checklist | `src/components/checklist/ChecklistView.tsx` |
 | `/planner` | Eisenhower Matrix (DnD) | `src/components/planner/PlannerView.tsx` |
 | `/log` | Activity Log | `src/components/log/LogView.tsx` |
@@ -65,6 +66,14 @@ Session state lives in `PlannerContext` (`src/components/planner/PlannerContext.
 - `deleteAllHistory()` — wipes all saved entries for the current user
 - `savedHistory` — all previously saved entries, loaded on mount
 
+**Habit tracking** is fully persisted via `useHabits()` (`src/lib/useHabits.ts`). Users configure their own habits (name, emoji icon, color) on the `/habits` page — no hardcoded habits. The hook provides:
+- `addHabit`, `archiveHabit`, `deleteHabit` — CRUD for user-defined habits (`habits` table)
+- `toggleCompletion(habitId, date)` — mark/unmark a habit for a specific day (`habit_completions` table, unique per habit per day)
+- `getStreak(habitId)` — consecutive completed days ending today (computed client-side)
+- `isCompleted(habitId, date)` — fast Set-based lookup
+
+The `/habits` page shows each habit as a card with: streak badge, week view (Mon–Sun checkmarks), contribution grid (last 12 weeks dot matrix in the habit's color), and a today toggle. The Intake Wizard's StepHabits now reads from the user's Supabase habits instead of hardcoded `HABIT_DEFS`; if none configured, it links to `/habits`.
+
 The Supabase client (`src/lib/supabase.ts`) is a `useSupabaseClient()` hook that passes the Clerk session token via `accessToken` callback for RLS.
 
 Timer state uses `startedAt` timestamps so it survives tab navigation (but not refresh).
@@ -95,7 +104,13 @@ API routes proxy external calls server-side so keys never reach the browser. Wea
 
 ## Database (Supabase)
 
-Schema in `supabase/schema.sql`. Tables: `categories` (9 seeded rows, read-only), `tasks`, `log_entries`, `wizard_state`. Only `log_entries` is actively used for persistence; other tables exist but are currently unused (planner state is session-only). RLS enabled on all tables.
+Schema in `supabase/schema.sql` + migrations applied via Supabase MCP. Active tables:
+- `categories` (9 seeded rows, read-only)
+- `log_entries` — persisted activity log (via `useLogHistory`)
+- `habits` — user-defined habits: `name`, `icon`, `color`, `archived` (via `useHabits`)
+- `habit_completions` — one row per habit per day, unique on `(habit_id, completed_date)` (via `useHabits`)
+
+Unused tables (schema exists, not wired to UI): `tasks`, `wizard_state`. RLS enabled on all tables.
 
 Supabase MCP server connected for direct DB inspection from Claude Code.
 

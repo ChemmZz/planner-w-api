@@ -1,19 +1,20 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { usePlanner } from '@/components/planner/PlannerContext';
-import { HABIT_DEFS } from '@/lib/constants';
+import { useHabits } from '@/lib/useHabits';
 
 export default function StepHabits() {
   const { addTask, removeTask, tasks } = usePlanner();
+  const { habits, loading } = useHabits();
 
-  // Derive initial selection from existing habit tasks so going back doesn't reset
+  // Derive initial selection from existing habit tasks
   function deriveSelected(): Set<string> {
     const habitTexts = tasks.filter((t) => t.categoryId === 'habit').map((t) => t.text);
     const s = new Set<string>();
-    for (const habit of HABIT_DEFS) {
-      const allPresent = habit.tasks.every((t) => habitTexts.includes(t.text));
-      if (allPresent) s.add(habit.id);
+    for (const habit of habits) {
+      if (habitTexts.includes(habit.name)) s.add(habit.id);
     }
     return s;
   }
@@ -21,28 +22,36 @@ export default function StepHabits() {
   const [selected, setSelected] = useState<Set<string>>(deriveSelected);
   const prevSelected = useRef<Set<string>>(new Set(selected));
 
+  // Re-derive when habits load from DB
+  useEffect(() => {
+    if (habits.length === 0) return;
+    const derived = deriveSelected();
+    setSelected(derived);
+    prevSelected.current = new Set(derived);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [habits.length]);
+
   useEffect(() => {
     const prev = prevSelected.current;
     const curr = selected;
 
-    // Newly selected habits: add their tasks
+    // Newly selected: add task
     curr.forEach((habitId) => {
       if (!prev.has(habitId)) {
-        const habit = HABIT_DEFS.find((h) => h.id === habitId);
-        habit?.tasks.forEach((t) => addTask('habit', t.text));
+        const habit = habits.find((h) => h.id === habitId);
+        if (habit) addTask('habit', habit.name);
       }
     });
 
-    // Newly deselected habits: remove their tasks
+    // Newly deselected: remove task
     prev.forEach((habitId) => {
       if (!curr.has(habitId)) {
-        const habit = HABIT_DEFS.find((h) => h.id === habitId);
+        const habit = habits.find((h) => h.id === habitId);
         if (habit) {
-          const textsToRemove = habit.tasks.map((t) => t.text);
-          const tasksToRemove = tasks.filter(
-            (t) => t.categoryId === 'habit' && textsToRemove.includes(t.text)
+          const toRemove = tasks.filter(
+            (t) => t.categoryId === 'habit' && t.text === habit.name
           );
-          tasksToRemove.forEach((t) => removeTask(t.id));
+          toRemove.forEach((t) => removeTask(t.id));
         }
       }
     });
@@ -53,13 +62,35 @@ export default function StepHabits() {
   function toggle(habitId: string) {
     setSelected((prev) => {
       const next = new Set(prev);
-      if (next.has(habitId)) {
-        next.delete(habitId);
-      } else {
-        next.add(habitId);
-      }
+      if (next.has(habitId)) next.delete(habitId);
+      else next.add(habitId);
       return next;
     });
+  }
+
+  if (loading) {
+    return (
+      <div className="py-8 text-center text-sm text-gray-400">
+        Loading your habits…
+      </div>
+    );
+  }
+
+  if (habits.length === 0) {
+    return (
+      <div className="space-y-4 text-center py-8">
+        <h2 className="text-lg font-semibold text-gray-800">Daily Habits</h2>
+        <p className="text-sm text-gray-500">
+          You haven&apos;t set up any habits yet.
+        </p>
+        <Link
+          href="/habits"
+          className="inline-block rounded-lg bg-indigo-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-600"
+        >
+          Set up habits
+        </Link>
+      </div>
+    );
   }
 
   return (
@@ -69,8 +100,8 @@ export default function StepHabits() {
         Select habits to add them as tasks for today.
       </p>
 
-      <div className="grid grid-cols-2 gap-3">
-        {HABIT_DEFS.map((habit) => {
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {habits.map((habit) => {
           const isOn = selected.has(habit.id);
           return (
             <button
@@ -96,20 +127,23 @@ export default function StepHabits() {
                     </svg>
                   )}
                 </span>
+                <span className="text-base">{habit.icon}</span>
                 <span className={`text-sm font-medium ${isOn ? 'text-pink-700' : 'text-gray-600'}`}>
-                  {habit.label}
+                  {habit.name}
                 </span>
               </div>
-              {isOn && (
-                <div className="mt-2 ml-9 space-y-1">
-                  {habit.tasks.map((t, i) => (
-                    <p key={i} className="text-xs text-pink-500">+ {t.text}</p>
-                  ))}
-                </div>
-              )}
             </button>
           );
         })}
+      </div>
+
+      <div className="text-center pt-2">
+        <Link
+          href="/habits"
+          className="text-xs text-gray-400 hover:text-indigo-500 transition-colors"
+        >
+          Manage habits
+        </Link>
       </div>
     </div>
   );
