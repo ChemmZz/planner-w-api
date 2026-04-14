@@ -1,8 +1,5 @@
 // Open-Meteo — free, no API key needed.
-// Default: Chicago (UChicago campus).
-
-const LAT = 41.8781;
-const LON = -87.6298;
+// Lat/lon provided by the client via query params (browser geolocation).
 
 // WMO weather codes → description + emoji
 const WMO_DESCRIPTIONS: Record<number, { label: string; icon: string }> = {
@@ -36,11 +33,22 @@ function describeWeather(code: number) {
   return WMO_DESCRIPTIONS[code] ?? { label: 'Unknown', icon: '🌡️' };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const lat = searchParams.get('lat');
+  const lon = searchParams.get('lon');
+
+  if (!lat || !lon) {
+    return Response.json(
+      { error: 'Missing lat and lon query parameters' },
+      { status: 400 }
+    );
+  }
+
   try {
     const url = new URL('https://api.open-meteo.com/v1/forecast');
-    url.searchParams.set('latitude', String(LAT));
-    url.searchParams.set('longitude', String(LON));
+    url.searchParams.set('latitude', lat);
+    url.searchParams.set('longitude', lon);
     url.searchParams.set('current', 'temperature_2m,apparent_temperature,weather_code');
     url.searchParams.set('temperature_unit', 'celsius');
 

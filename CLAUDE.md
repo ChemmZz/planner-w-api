@@ -73,7 +73,7 @@ Timer state uses `startedAt` timestamps so it survives tab navigation (but not r
 
 - `AppShell` (`src/components/layout/AppShell.tsx`) — flex row: sidebar + main content. Manages mobile drawer state. Auth routes (`/sign-in`, `/sign-up`) render fullscreen without sidebar.
 - `Sidebar` (`src/components/layout/Sidebar.tsx`) — 14rem, 7 nav links, active state via `usePathname()`. On mobile (<md): hidden by default, opens as an overlay drawer with backdrop via hamburger in TopBar. Clicking a link auto-closes the drawer.
-- `TopBar` (`src/components/layout/TopBar.tsx`) — top-right header strip. Contains: hamburger (mobile only), weather badge (hidden on narrow screens), Clerk `UserButton` with custom menu items (Manage account, Delete log history, Sign out).
+- `TopBar` (`src/components/layout/TopBar.tsx`) — top-right header strip. Contains: hamburger (mobile only), weather badge with geolocation detection (hidden on narrow screens, shows `—` if location denied), Clerk `UserButton` with custom menu items (Manage account, Delete log history, Sign out).
 - Theme: light, Structured.app-inspired. Design tokens in `src/app/globals.css`.
 - Breakpoint strategy: `md:` (768px) for sidebar visibility, `sm:` (640px) for grids and input stacking.
 
@@ -81,7 +81,7 @@ Timer state uses `startedAt` timestamps so it survives tab navigation (but not r
 
 | API | Route | Key | Purpose |
 |-----|-------|-----|---------|
-| Open-Meteo | `src/app/api/weather/route.ts` | None (free) | Current weather for Chicago (Celsius + feels-like) shown in TopBar |
+| Open-Meteo | `src/app/api/weather/route.ts` | None (free) | Current weather (Celsius + feels-like) shown in TopBar. Location via browser geolocation (opt-in); coords cached in localStorage. If denied, badge shows `—` placeholder. Route accepts `?lat=...&lon=...` query params. |
 | NewsAPI.org | `src/app/api/news/route.ts` | `NEWS_API_KEY` (server-only) | Top US headlines + search on `/news` page |
 
 API routes proxy external calls server-side so keys never reach the browser. Weather is cached 10 min (`revalidate: 600`), news 5 min (`revalidate: 300`).

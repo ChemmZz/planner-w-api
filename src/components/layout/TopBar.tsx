@@ -30,12 +30,55 @@ interface WeatherData {
   unit: string;
 }
 
+type LocationState =
+  | { status: 'loading' }
+  | { status: 'denied' }
+  | { status: 'ready'; lat: number; lon: number };
+
+function useGeolocation(): LocationState {
+  const [state, setState] = useState<LocationState>(() => {
+    if (typeof window === 'undefined') return { status: 'loading' };
+    const lat = localStorage.getItem('weather-lat');
+    const lon = localStorage.getItem('weather-lon');
+    if (lat && lon) return { status: 'ready', lat: Number(lat), lon: Number(lon) };
+    return { status: 'loading' };
+  });
+
+  useEffect(() => {
+    // If we already have coords from localStorage, skip geolocation prompt.
+    if (state.status === 'ready') return;
+
+    if (!navigator.geolocation) {
+      setState({ status: 'denied' });
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        localStorage.setItem('weather-lat', String(latitude));
+        localStorage.setItem('weather-lon', String(longitude));
+        setState({ status: 'ready', lat: latitude, lon: longitude });
+      },
+      () => {
+        setState({ status: 'denied' });
+      }
+    );
+    // Only run once on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return state;
+}
+
 function WeatherBadge() {
+  const location = useGeolocation();
   const [weather, setWeather] = useState<WeatherData | null>(null);
 
   useEffect(() => {
+    if (location.status !== 'ready') return;
     let cancelled = false;
-    fetch('/api/weather')
+    fetch(`/api/weather?lat=${location.lat}&lon=${location.lon}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (!cancelled && data && !data.error) setWeather(data);
@@ -44,8 +87,23 @@ function WeatherBadge() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [location]);
 
+  // Denied or unavailable — show placeholder.
+  if (location.status === 'denied') {
+    return (
+      <div
+        className="hidden sm:flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs text-gray-400"
+        style={{ borderColor: 'var(--color-surface-border)' }}
+        title="Location access not granted"
+      >
+        <span>🌡️</span>
+        <span>—</span>
+      </div>
+    );
+  }
+
+  // Still loading location or weather data.
   if (!weather) return null;
 
   return (
@@ -53,7 +111,7 @@ function WeatherBadge() {
       className="hidden sm:flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs"
       style={{ borderColor: 'var(--color-surface-border)' }}
     >
-      <span title={`${weather.label} in Chicago`} className="cursor-default">
+      <span title={weather.label} className="cursor-default">
         {weather.icon}
       </span>
       <span
