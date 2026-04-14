@@ -1,12 +1,20 @@
 'use client';
 
+import { useCallback } from 'react';
 import { usePlanner } from '@/components/planner/PlannerContext';
+import { useHabits } from '@/lib/useHabits';
 import { CATEGORIES, CATEGORY_GROUPS } from '@/lib/constants';
 import ProgressBar from './ProgressBar';
 import TaskCard from './TaskCard';
 
+function todayKey(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 export default function ChecklistView() {
   const { tasks, toggleTask } = usePlanner();
+  const { habits, toggleCompletion, isCompleted } = useHabits();
 
   const done = tasks.filter((t) => t.done).length;
   const total = tasks.length;
@@ -40,7 +48,24 @@ export default function ChecklistView() {
                     key={task.id}
                     task={task}
                     category={cat}
-                    onToggle={() => toggleTask(task.id)}
+                    onToggle={() => {
+                      toggleTask(task.id);
+                      // Sync habit completions: when a habit task is toggled,
+                      // mirror the change to the habits tracking system.
+                      if (task.categoryId === 'habit') {
+                        const habit = habits.find((h) => h.name === task.text);
+                        if (habit) {
+                          const today = todayKey();
+                          const doneNow = !task.done; // after toggle
+                          const trackedNow = isCompleted(habit.id, today);
+                          if (doneNow && !trackedNow) {
+                            toggleCompletion(habit.id, today);
+                          } else if (!doneNow && trackedNow) {
+                            toggleCompletion(habit.id, today);
+                          }
+                        }
+                      }
+                    }}
                   />
                 );
               })}
