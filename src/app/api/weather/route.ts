@@ -41,8 +41,8 @@ export async function GET() {
     const url = new URL('https://api.open-meteo.com/v1/forecast');
     url.searchParams.set('latitude', String(LAT));
     url.searchParams.set('longitude', String(LON));
-    url.searchParams.set('current', 'temperature_2m,weather_code');
-    url.searchParams.set('temperature_unit', 'fahrenheit');
+    url.searchParams.set('current', 'temperature_2m,apparent_temperature,weather_code');
+    url.searchParams.set('temperature_unit', 'celsius');
 
     const res = await fetch(url.toString(), { next: { revalidate: 600 } });
     if (!res.ok) {
@@ -54,10 +54,11 @@ export async function GET() {
 
     const data = await res.json();
     const temp = Math.round(data.current.temperature_2m);
+    const feelsLike = Math.round(data.current.apparent_temperature);
     const code = data.current.weather_code;
     const { label, icon } = describeWeather(code);
 
-    return Response.json({ temp, label, icon, unit: '°F' });
+    return Response.json({ temp, feelsLike, label, icon, unit: '°C' });
   } catch (e) {
     return Response.json(
       { error: e instanceof Error ? e.message : 'Weather fetch failed' },
