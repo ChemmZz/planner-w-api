@@ -2,7 +2,7 @@
 
 # my-planner
 
-Personal daily planner web app. Session-only state (no database, no persistence — resets on refresh).
+Personal daily planner web app. Session state resets on refresh; activity log can be explicitly saved to Supabase per-user.
 
 ## Tech Stack
 
@@ -10,9 +10,11 @@ Personal daily planner web app. Session-only state (no database, no persistence 
 - React 19, TypeScript
 - Tailwind CSS v4 (`@import "tailwindcss"` + `@theme inline {}` in globals.css — no tailwind.config.js)
 - @dnd-kit/core for drag & drop (Eisenhower matrix)
+- Clerk v7 — authentication (ClerkProvider, `src/proxy.ts` for route protection)
+- Supabase — Postgres database for persisted log entries, RLS via Clerk JWT `sub` claim
 - Path alias: `@/*` → `./src/*`
 
-## Pages (7)
+## Pages (9)
 
 | Route | Page | Component |
 |-------|------|-----------|
@@ -22,7 +24,9 @@ Personal daily planner web app. Session-only state (no database, no persistence 
 | `/log` | Activity Log | `src/components/log/LogView.tsx` |
 | `/pomodoro` | Deep Focus Timer | `src/components/pomodoro/PomodoroView.tsx` |
 | `/games` | Games (Wordle) | `src/components/games/GamesView.tsx` |
-| `/news` | News (empty, pending) | `src/app/news/page.tsx` |
+| `/news` | News headlines (NewsAPI) | `src/components/news/NewsView.tsx` |
+| `/sign-in` | Clerk sign-in | `src/app/sign-in/[[...sign-in]]/page.tsx` |
+| `/sign-up` | Clerk sign-up | `src/app/sign-up/[[...sign-up]]/page.tsx` |
 
 ## Intake Flow
 
@@ -54,13 +58,46 @@ Personal daily planner web app. Session-only state (no database, no persistence 
 
 ## State Management
 
-All state lives in `PlannerContext` (`src/components/planner/PlannerContext.tsx`) — a React context provider mounted in `AppShell`. No persistence. Timer state uses `startedAt` timestamps so it survives tab navigation (but not refresh).
+Session state lives in `PlannerContext` (`src/components/planner/PlannerContext.tsx`) — tasks, wizard progress, timer, and in-session log entries. All reset on refresh.
 
-## Layout
+**Persisted state:** Activity log entries can be explicitly saved to Supabase via `useLogHistory()` (`src/lib/useLogHistory.ts`). The hook provides:
+- `saveToday(entries)` — upserts session entries to `log_entries` table (idempotent by id)
+- `deleteAllHistory()` — wipes all saved entries for the current user
+- `savedHistory` — all previously saved entries, loaded on mount
 
-- `AppShell` (`src/components/layout/AppShell.tsx`) — flex row: sidebar + main content
-- `Sidebar` (`src/components/layout/Sidebar.tsx`) — 14rem, 7 nav links, active state via `usePathname()`
+The Supabase client (`src/lib/supabase.ts`) is a `useSupabaseClient()` hook that passes the Clerk session token via `accessToken` callback for RLS.
+
+Timer state uses `startedAt` timestamps so it survives tab navigation (but not refresh).
+
+## Layout (responsive)
+
+- `AppShell` (`src/components/layout/AppShell.tsx`) — flex row: sidebar + main content. Manages mobile drawer state. Auth routes (`/sign-in`, `/sign-up`) render fullscreen without sidebar.
+- `Sidebar` (`src/components/layout/Sidebar.tsx`) — 14rem, 7 nav links, active state via `usePathname()`. On mobile (<md): hidden by default, opens as an overlay drawer with backdrop via hamburger in TopBar. Clicking a link auto-closes the drawer.
+- `TopBar` (`src/components/layout/TopBar.tsx`) — top-right header strip. Contains: hamburger (mobile only), weather badge (hidden on narrow screens), Clerk `UserButton` with custom menu items (Manage account, Delete log history, Sign out).
 - Theme: light, Structured.app-inspired. Design tokens in `src/app/globals.css`.
+- Breakpoint strategy: `md:` (768px) for sidebar visibility, `sm:` (640px) for grids and input stacking.
+
+## External APIs
+
+| API | Route | Key | Purpose |
+|-----|-------|-----|---------|
+| Open-Meteo | `src/app/api/weather/route.ts` | None (free) | Current weather for Chicago (Celsius + feels-like) shown in TopBar |
+| NewsAPI.org | `src/app/api/news/route.ts` | `NEWS_API_KEY` (server-only) | Top US headlines + search on `/news` page |
+
+API routes proxy external calls server-side so keys never reach the browser. Weather is cached 10 min (`revalidate: 600`), news 5 min (`revalidate: 300`).
+
+## Authentication
+
+- Clerk v7 with `@clerk/nextjs`. `ClerkProvider` wraps root layout (`src/app/layout.tsx`).
+- Route protection via `src/proxy.ts` (Next.js 16 renamed `middleware.ts` → `proxy.ts`). All routes except `/sign-in` and `/sign-up` require authentication.
+- Supabase RLS uses `(select auth.jwt() ->> 'sub') = user_id` — the Clerk JWT `sub` claim is the user's Clerk ID (text, not UUID).
+- Profile menu in TopBar: Clerk's built-in "Manage account" opens `<UserProfile />` modal (includes account deletion if enabled in Clerk dashboard). Custom "Delete log history" action wipes saved log entries.
+
+## Database (Supabase)
+
+Schema in `supabase/schema.sql`. Tables: `categories` (9 seeded rows, read-only), `tasks`, `log_entries`, `wizard_state`. Only `log_entries` is actively used for persistence; other tables exist but are currently unused (planner state is session-only). RLS enabled on all tables.
+
+Supabase MCP server connected for direct DB inspection from Claude Code.
 
 ## Key Patterns
 
@@ -68,4 +105,5 @@ All state lives in `PlannerContext` (`src/components/planner/PlannerContext.tsx`
 - All interactivity is in client components
 - Drag & drop (Eisenhower matrix) uses `@dnd-kit/core` with `useDraggable`/`useDroppable`
 - Deep Focus Timer is a stopwatch (counts up), break = 20% of work time
-- Activity Log tracks task switches and warns when context-switching is high (>6 switches)
+- Activity Log tracks task switches, warns when context-switching is high (>6 switches), and shows saved history via a month calendar with dot indicators for days with data
+- Environment variables: `NEXT_PUBLIC_*` keys are safe for browser; `SUPABASE_SECRET_KEY`, `CLERK_SECRET_KEY`, `NEWS_API_KEY` are server-only. All in `.env.local` (gitignored).
