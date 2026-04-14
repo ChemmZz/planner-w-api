@@ -52,14 +52,21 @@ function WeatherBadge() {
     <div
       className="flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs"
       style={{ borderColor: 'var(--color-surface-border)' }}
-      title={`${weather.label} in Chicago — feels like ${weather.feelsLike}${weather.unit}`}
     >
-      <span>{weather.icon}</span>
-      <span className="font-medium text-gray-700">
-        {weather.temp}{weather.unit}
+      <span title={`${weather.label} in Chicago`} className="cursor-default">
+        {weather.icon}
       </span>
-      <span className="text-gray-400">
-        / {weather.feelsLike}{weather.unit}
+      <span
+        title="Feels like"
+        className="cursor-default font-semibold text-gray-800"
+      >
+        {weather.feelsLike}{weather.unit}
+      </span>
+      <span
+        title="Actual temperature"
+        className="cursor-default text-gray-400"
+      >
+        / {weather.temp}{weather.unit}
       </span>
     </div>
   );
