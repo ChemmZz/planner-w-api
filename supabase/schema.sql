@@ -185,3 +185,32 @@ create policy "wizard_state: update own" on public.wizard_state
 create policy "wizard_state: delete own" on public.wizard_state
   for delete to authenticated
   using ((select auth.jwt() ->> 'sub') = user_id);
+
+-- ---------------------------------------------------------------------------
+-- saved_sources  (user's favorite news sources from NewsAPI)
+-- ---------------------------------------------------------------------------
+create table if not exists public.saved_sources (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    text not null,
+  source_id  text not null,        -- NewsAPI source id (e.g. "bbc-news")
+  name       text not null,
+  description text,
+  url        text,
+  category   text,
+  saved_at   timestamptz not null default now(),
+  unique (user_id, source_id)
+);
+
+create index if not exists saved_sources_user_id_idx on public.saved_sources (user_id);
+
+alter table public.saved_sources enable row level security;
+
+create policy "saved_sources: select own" on public.saved_sources
+  for select to authenticated
+  using ((select auth.jwt() ->> 'sub') = user_id);
+create policy "saved_sources: insert own" on public.saved_sources
+  for insert to authenticated
+  with check ((select auth.jwt() ->> 'sub') = user_id);
+create policy "saved_sources: delete own" on public.saved_sources
+  for delete to authenticated
+  using ((select auth.jwt() ->> 'sub') = user_id);

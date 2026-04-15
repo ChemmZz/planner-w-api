@@ -12,8 +12,43 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const query = searchParams.get('q');
+  const browseSources = searchParams.get('sources') === 'browse';
+  const categoryFilter = searchParams.get('category');
+  const fromSources = searchParams.get('from'); // comma-separated source IDs
 
   try {
+    // Browse available sources
+    if (browseSources) {
+      const url = new URL('https://newsapi.org/v2/top-headlines/sources');
+      if (categoryFilter) url.searchParams.set('category', categoryFilter);
+      url.searchParams.set('language', 'en');
+      url.searchParams.set('apiKey', apiKey);
+
+      const res = await fetch(url.toString(), { next: { revalidate: 300 } });
+      if (!res.ok) {
+        const body = await res.text();
+        return Response.json(
+          { error: `NewsAPI responded ${res.status}: ${body}` },
+          { status: 502 }
+        );
+      }
+
+      const data = await res.json();
+      const sources = (data.sources ?? []).map(
+        (s: { id: string; name: string; description: string; url: string; category: string; country: string }) => ({
+          id: s.id,
+          name: s.name,
+          description: s.description,
+          url: s.url,
+          category: s.category,
+          country: s.country,
+        })
+      );
+
+      return Response.json({ sources });
+    }
+
+    // Headlines (optionally filtered by sources)
     const url = new URL(
       query
         ? 'https://newsapi.org/v2/everything'
@@ -22,6 +57,8 @@ export async function GET(request: Request) {
     if (query) {
       url.searchParams.set('q', query);
       url.searchParams.set('sortBy', 'publishedAt');
+    } else if (fromSources) {
+      url.searchParams.set('sources', fromSources);
     } else {
       url.searchParams.set('country', 'us');
     }

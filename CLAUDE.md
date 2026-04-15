@@ -83,7 +83,7 @@ Timer state uses `startedAt` timestamps so it survives tab navigation (but not r
 | API | Route | Key | Purpose |
 |-----|-------|-----|---------|
 | Open-Meteo | `src/app/api/weather/route.ts` | None (free) | Current weather (Celsius + feels-like) shown in TopBar. Location via browser geolocation (opt-in); coords cached in localStorage. If denied, badge shows `—` placeholder. Route accepts `?lat=...&lon=...` query params. |
-| NewsAPI.org | `src/app/api/news/route.ts` | `NEWS_API_KEY` (server-only) | Top US headlines + search on `/news` page |
+| NewsAPI.org | `src/app/api/news/route.ts` | `NEWS_API_KEY` (server-only) | Top US headlines + search + browse/save sources on `/news` page. Three tabs: Headlines (search, filter by saved sources), Browse Sources (by category, save/unsave), My Sources (view/manage saved). Saved sources persisted to Supabase via `useSavedSources()` hook. |
 
 API routes proxy external calls server-side so keys never reach the browser. Weather is cached 10 min (`revalidate: 600`), news 5 min (`revalidate: 300`).
 
@@ -101,6 +101,7 @@ Schema in `supabase/schema.sql` + migrations applied via Supabase MCP. Active ta
 - `log_entries` — persisted activity log (via `useLogHistory`)
 - `habits` — user-defined habits: `name`, `icon`, `color`, `archived` (via `useHabits`)
 - `habit_completions` — one row per habit per day, unique on `(habit_id, completed_date)` (via `useHabits`)
+- `saved_sources` — user's favorite news sources from NewsAPI: `source_id`, `name`, `description`, `url`, `category`. Unique on `(user_id, source_id)`. RLS: select/insert/delete own. (via `useSavedSources`)
 
 Unused tables (schema exists, not wired to UI): `tasks`, `wizard_state`. RLS enabled on all tables.
 
