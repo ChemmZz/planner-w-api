@@ -31,31 +31,23 @@ Personal daily planner web app (dino + notes). Session state resets on refresh; 
 
 ## Intake Flow
 
-1. **Habits** (step 1) — toggle Gym / Reading. Selecting creates real tasks under the "habit" category. Reading creates two tasks: "Reading — 30 min" and "Reading — 15 min". After first selection, subsequent visits skip to step 2.
-2. **Tasks** (step 2) — add tasks by category with deadline (none/soft/hard), event type tags (productive/social/flexible), and optional notes.
+1. **Habits** (step 1) — select from user-defined habits (configured on `/habits` page). Selecting creates tasks under the system "habit" category. If no habits configured, links to `/habits`. After first selection, subsequent visits skip to step 2.
+2. **Tasks** (step 2) — add tasks by category with deadline (none/soft/hard), event type tags (productive/social/flexible), and optional notes. Only user-created categories are shown; a category manager lets users create custom groups and categories.
 3. "Start My Day" → redirects to `/checklist`.
 
 ## Data Model (`src/types/planner.ts`)
 
 - **TaskItem** — id, categoryId, text, done, deadlineType, deadlineDate?, eventType?, note?, quadrant? (Eisenhower)
 - **LogEntry** — id, time (string), activity (string), createdAt (timestamp)
-- **TimerState** — mode (work/break), isRunning, startedAt timestamp, accumulated seconds, workElapsed, breakDuration (20% of work), sessionCount, selectedTaskId
+- **TimerState** — mode (work/break), isRunning, startedAt timestamp, accumulated seconds, workElapsed, breakDuration (20% of work), sessionCount, selectedTaskId, isResetting (meteorite animation)
 - **WizardStep** — 1 | 2
 - **EisenhowerQuadrant** — 'do' | 'schedule' | 'delegate' | 'delete'
 
-## Categories (`src/lib/constants.ts`)
+## Categories (`src/lib/useCategories.ts`)
 
-| ID | Group | Label | Color |
-|----|-------|-------|-------|
-| class-se | Classes | Software Engineering | #6366f1 |
-| class-bds | Classes | Build, Design, Ship | #8b5cf6 |
-| class-pe | Classes | Program Eval. | #a78bfa |
-| work-gradlounge | Work | GradLounge | #f59e0b |
-| work-demography | Work | Demography Workshop | #f97316 |
-| personal-study | Personal Study | Personal Study | #10b981 |
-| job-application | Job Application | Job Application | #3b82f6 |
-| habit | Habits | Habits | #ec4899 |
-| other | Other | Other | #6b7280 |
+All categories and groups are **user-created** — no hardcoded defaults. Users create categories via the category manager in StepTasks (intake step 2), choosing a group name, label, and color. Categories are stored in Supabase with `user_id` for ownership. A system "habit" category (user_id=null) exists in the DB for habit-task integration but is hidden from the intake task form.
+
+The `useCategories()` hook provides: `categories`, `groups`, `byGroup()`, `find()`, `addCategory()`, `updateCategory()`, `deleteCategory()`.
 
 ## State Management
 
@@ -105,7 +97,7 @@ API routes proxy external calls server-side so keys never reach the browser. Wea
 ## Database (Supabase)
 
 Schema in `supabase/schema.sql` + migrations applied via Supabase MCP. Active tables:
-- `categories` (9 seeded rows, read-only)
+- `categories` — user-created categories with `user_id`, `parent_id`, arbitrary `group` names. RLS: read system+own, write own only.
 - `log_entries` — persisted activity log (via `useLogHistory`)
 - `habits` — user-defined habits: `name`, `icon`, `color`, `archived` (via `useHabits`)
 - `habit_completions` — one row per habit per day, unique on `(habit_id, completed_date)` (via `useHabits`)
@@ -119,6 +111,6 @@ Supabase MCP server connected for direct DB inspection from Claude Code.
 - Page files are thin server components that import a single `'use client'` view component
 - All interactivity is in client components
 - Drag & drop (Eisenhower matrix) uses `@dnd-kit/core` with `useDraggable`/`useDroppable`
-- Deep Focus Timer is a stopwatch (counts up), break = 20% of work time. Includes a **Conservatory Scene** (`src/components/pomodoro/ConservatoryScene.tsx`) — an SVG illustration inspired by Lincoln Park Conservatory that progressively reveals plants, flowers, a pond, birds, bunnies, and butterflies based on accumulated work minutes (thresholds at 3, 6, 10, 15, 20, 30, 45, 60, 90 min). **Dev mode**: Shift+click the status text below the scene to reveal a time slider (0–120 min) for previewing all growth stages
+- Deep Focus Timer is a stopwatch (counts up), break = 20% of work time. Includes a **Conservatory Scene** (`src/components/pomodoro/ConservatoryScene.tsx`) — an SVG illustration that spans **150 minutes**. Starts with barren brown soil, rain grows grass (5–12 min), second rain fills the pond (15–22 min), then crane/greenhouse/garden elements progressively appear (25–150 min). **Meteorite reset**: clicking Reset triggers a meteorite impact animation that destroys the scene back to barren soil (2.5s CSS animation, two-phase state: `isResetting` in PlannerContext preserves scene during animation, `timerResetComplete` zeros out after). **Dev mode**: Shift+click the status text below the scene to reveal a time slider (0–155 min) for previewing all growth stages
 - Activity Log tracks task switches, warns when context-switching is high (>6 switches), and shows saved history via a month calendar with dot indicators for days with data
 - Environment variables: `NEXT_PUBLIC_*` keys are safe for browser; `SUPABASE_SECRET_KEY`, `CLERK_SECRET_KEY`, `NEWS_API_KEY` are server-only. All in `.env.local` (gitignored).
